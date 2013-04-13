@@ -1,0 +1,93 @@
+/* File list CSS */
+#list5 { color:#eee; }
+#list5 ul { font-size:18px; }
+#list5 ul li { }
+#list5 ul li ul { list-style-image: url("/opt/djangostack-1.4.5-0/apps/django/django_projects/SerloBox/SerloBox/static/nested.png"); padding:5px 0 5px 18px; font-size:15px; }
+#list5 ul li ul li { color:#bfe1f1; height:15px; margin-left:10px; }
+
+/* The rest of CSS */
+body { 
+	font:100% normal Arial, Helvetica, sans-serif; 
+	background:#161712;
+	color:#ffffff;
+} 
+
+form,select,textarea {
+	margin:0; 
+	padding:0; 
+	color:#ffffff;
+} 
+
+.header { 
+	color:#33CCFF; 
+	font-size:64px; 
+	text-transform:uppercase; 
+	text-align:center;
+} /
+
+.state {
+	margin:0 auto;
+	position:relative;
+	border:1px solid #262626;
+	text-align: center;
+	top: 5px;
+}
+
+.box { 
+	margin:0 auto; 
+	width:500px; 
+	background:#222222; 
+	position:relative; 
+	top:15px; 
+	border:1px solid #262626; 
+}
+
+.box label { 
+	width:100%; 
+	display: block; 
+	background:#1C1C1C; 
+	border-top:1px solid #262626; 
+	border-bottom:1px solid #161712; 
+	padding:10px 0 10px 0; 
+} 
+
+.box label span { 
+	display: block; 
+	color:#bbbbbb; 
+	font-size:12px; 
+	float:left; 
+	width:100px; 
+	text-align:right; 
+	padding:5px 20px 0 0; 
+} 
+
+.box .input_text { 
+	padding:10px 10px; 
+	width:200px; 
+	background:#262626; 
+	border-bottom: 1px double #171717; 
+	border-top: 1px double #171717; 
+	border-left:1px double #333333; 
+	border-right:1px double #333333; 
+} 
+
+.box .message{ 
+	padding:7px 7px; 
+	width:350px; 
+	background:#262626; 
+	border-bottom: 1px double #171717; 
+	border-top: 1px double #171717; 
+	border-left:1px double #333333; 
+	border-right:1px double #333333; 
+	overflow:hidden; 
+	height:150px; 
+} 
+
+.box .button{ 
+	text-align:right;
+	padding-right: 30px; 
+}
+
+.box p{
+	text-align: center;
+}
