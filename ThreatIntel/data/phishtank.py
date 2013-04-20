@@ -44,4 +44,4 @@ class PhishTankDataProvider(DataProvider):
                     disp = InformationSet.POSITIVE
             info["report_id"] = int(jres["phish_id"])
             info["report_url"] = jres["phish_detail_page"]
-        return InformationSet(self.name, disp, **info)
+        return InformationSet(disp, **info)

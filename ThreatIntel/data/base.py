@@ -25,14 +25,14 @@ class DataProvider(object):
            querying each specified provider"""
         def query1(p, target, qtype):
             try:
-                return p.query(target, qtype)
+                return (p, p.query(target, qtype))
             except:
-                return InformationSet(p.name, InformationSet.FAILURE)
+                return (p, InformationSet(InformationSet.FAILURE))
         g = gevent.pool.Group()
         l = g.imap_unordered(lambda p: query1(p, target, qtype), providers)
-        for iset in l:
+        for p, iset in l:
             if iset != None:
-                yield iset
+                yield (p, iset)
     
 class InformationSet(object):
     POSITIVE = 1
@@ -41,8 +41,7 @@ class InformationSet(object):
     FAILURE = 4
     INFORMATIONAL = 5
 
-    def __init__(self, pname, disposition, **facets):
-        self._pname = pname
+    def __init__(self, disposition, **facets):
         self._disposition = disposition
         self._facets = frozenset(facets.iteritems())
     
@@ -53,7 +52,3 @@ class InformationSet(object):
     @property
     def facets(self):
         return self._facets
-    
-    @property
-    def pname(self):
-        return self._pname
