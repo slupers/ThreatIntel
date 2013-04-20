@@ -18,7 +18,7 @@ class PhishTankDataProvider(DataProvider):
         args["format"] = u"json"
         if self._apikey != None:
             args["app_key"] = self._apikey
-        r = requests.post(PhishTankDataProvider._urlbase, args)
+        r = requests.post(self._urlbase, args)
         jdata = r.json()
         return jdata["results"]
 

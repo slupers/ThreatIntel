@@ -36,9 +36,9 @@ class ShadowServerDataProvider(DataProvider):
 
     def query(self, target, qtype):
         if qtype == DataProvider.IPV4_QUERY:
-            return ShadowServerDataProvider._peerlookup(target)
+            return self._peerlookup(target)
         elif qtype == DataProvider.MD5_QUERY:
-            return ShadowServerDataProvider._avlookup(target)
+            return self._avlookup(target)
         elif qtype == DataProvider.SHA1_QUERY:
-            return ShadowServerDataProvider._avlookup(target)
+            return self._avlookup(target)
         return None
