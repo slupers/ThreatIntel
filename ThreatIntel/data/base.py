@@ -24,10 +24,10 @@ class DataProvider(object):
         """Return a generator that yields an InformationSet produced by
            querying each specified provider"""
         def query1(p, target, qtype):
-            #try:
-            return (p, p.query(target, qtype))
-            #except:
-                #return (p, InformationSet(InformationSet.FAILURE))
+            try:
+                return (p, p.query(target, qtype))
+            except:
+                return (p, InformationSet(InformationSet.FAILURE))
         g = gevent.pool.Group()
         l = g.imap_unordered(lambda p: query1(p, target, qtype), providers)
         for p, iset in l:

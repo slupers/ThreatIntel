@@ -1,18 +1,17 @@
-import contextlib
+from contextlib import closing
 import gevent.monkey
-import socket
-import urllib2
+from socket import inet_ntoa, socket, AF_INET, IPPROTO_TCP, SOCK_STREAM
 from .base import DataProvider, InformationSet
 
 gevent.monkey.patch_socket()
 
 class ShadowServerDataProvider(DataProvider):
-    _whoissvr = "asn.shadowserver.org"
+    _whoissvr = "64.71.137.251" # ShadowServer's DNS is FUBAR
     
-    @staticmethod
-    def _peerlookup(target):
-        dest = (ShadowServerDataProvider._whoissvr, 43)
-        with contextlib.closing(socket.create_connection(dest)) as s:
+    @classmethod
+    def _peerlookup(cls, target):
+        with closing(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) as s:
+            s.connect((cls._whoissvr, 43))
             s.send("peer {0}\n".format(target))
             resp = s.recv(1024)
             cmps = resp.split(" | ")
