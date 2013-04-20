@@ -49,11 +49,11 @@ class InformationSet(object):
     
     @property
     def disposition(self):
-        return self.disposition
+        return self._disposition
     
     @property
     def facets(self):
-        return self.facets
+        return self._facets
     
     @property
     def pname(self):

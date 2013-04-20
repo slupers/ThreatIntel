@@ -1,7 +1,7 @@
 import gevent.monkey
 import isodate
 import requests
-from . import DataProvider
+from . import DataProvider, InformationSet
 
 gevent.monkey.patch_socket()
 
@@ -11,8 +11,7 @@ class PhishTankDataProvider(DataProvider):
     def __init__(self, apikey=None):
         self._apikey = apikey
 
-    @staticmethod
-    def _dolookup(url):
+    def _dolookup(self, url):
         # Perform a query against PhishTank
         args = {}
         args["url"] = url
@@ -20,7 +19,7 @@ class PhishTankDataProvider(DataProvider):
         if self._apikey != None:
             args["app_key"] = self._apikey
         r = requests.post(PhishTankDataProvider._urlbase, args)
-        jdata = r.json
+        jdata = r.json()
         return jdata["results"]
 
     @property
@@ -33,7 +32,7 @@ class PhishTankDataProvider(DataProvider):
             return None
         
         # Produce an output information set
-        jres = PhishTankDataProvider._dolookup(query)
+        jres = self._dolookup(target)
         info = {}
         disp = InformationSet.NEGATIVE
         if jres["in_database"] == True:
