@@ -24,6 +24,10 @@ class PhishTankDataProvider(DataProvider):
         return jdata["results"]
 
     def query(self, target, qtype):
+        # Bail out if this isn't a URL query
+        if qtype != DataProvider.URL_QUERY:
+            return None
+        
         # Produce an output information set
         jres = PhishTankDataProvider._dolookup(query)
         info = {}

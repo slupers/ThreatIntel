@@ -26,11 +26,12 @@ class DataProvider(object):
             ret = None
             try:
                 ret = itr.next()
-                yield ret
             except StopIteration:
                 break
             except:
                 yield InformationSet(p.name, InformationSet.FAILURE)
+            if ret != None:
+                yield ret
     
 class InformationSet(object):
     POSITIVE = 1
