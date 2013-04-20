@@ -2,9 +2,9 @@ import contextlib
 import gevent.monkey
 import socket
 import urllib2
-from base import DataProvider, InformationSet
+from .base import DataProvider, InformationSet
 
-#gevent.monkey.patch_socket()
+gevent.monkey.patch_socket()
 
 class ShadowServerDataProvider(DataProvider):
     _whoissvr = "asn.shadowserver.org"
