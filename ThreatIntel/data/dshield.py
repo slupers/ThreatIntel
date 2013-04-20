@@ -5,6 +5,8 @@ import urllib2
 import xml.etree.cElementTree as xml
 from base import DataProvider, InformationSet
 
+gevent.monkey.patch_socket()
+
 class DShieldDataProvider(DataProvider):
     def lookup_ip(self,ip):
         urlbase = "http://www.dshield.org/api/ip/"
