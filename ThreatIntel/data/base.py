@@ -24,10 +24,10 @@ class DataProvider(object):
         """Return a generator that yields an InformationSet produced by
            querying each specified provider"""
         def query1(p, target, qtype):
-            try:
-                return (p, p.query(target, qtype))
-            except:
-                return (p, InformationSet(InformationSet.FAILURE))
+            #try:
+            return (p, p.query(target, qtype))
+            #except:
+                #return (p, InformationSet(InformationSet.FAILURE))
         g = gevent.pool.Group()
         l = g.imap_unordered(lambda p: query1(p, target, qtype), providers)
         for p, iset in l:
@@ -42,13 +42,5 @@ class InformationSet(object):
     INFORMATIONAL = 5  # The query did not return information about threats
 
     def __init__(self, disposition, **facets):
-        self._disposition = disposition
-        self._facets = frozenset(facets.iteritems())
-    
-    @property
-    def disposition(self):
-        return self._disposition
-    
-    @property
-    def facets(self):
-        return self._facets
+        self.disposition = disposition
+        self.facets = facets.items()
