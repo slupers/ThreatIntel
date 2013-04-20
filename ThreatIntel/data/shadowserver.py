@@ -1,16 +1,15 @@
 from contextlib import closing
-import gevent.monkey
-from socket import inet_ntoa, socket, AF_INET, IPPROTO_TCP, SOCK_STREAM
+import gevent.socket
+from socket import AF_INET, IPPROTO_TCP, SOCK_STREAM
 from .base import DataProvider, InformationSet
-
-gevent.monkey.patch_socket()
 
 class ShadowServerDataProvider(DataProvider):
     _whoissvr = "64.71.137.251" # ShadowServer's DNS is FUBAR
     
     @classmethod
     def _peerlookup(cls, target):
-        with closing(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) as s:
+        s = gevent.socket.socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+        with closing(s):
             s.connect((cls._whoissvr, 43))
             s.send("peer {0}\n".format(target))
             resp = s.recv(1024)
