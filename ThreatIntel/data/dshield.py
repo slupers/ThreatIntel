@@ -7,7 +7,7 @@ from base import DataProvider, InformationSet
 
 class DShieldDataProvider(DataProvider):
     def lookup_ip(ip):
-	urlbase = "http://www.dshield.org/api/ip/"
+        urlbase = "http://www.dshield.org/api/ip/"
         result=urllib2.urlopen(urlbase+ip)
         xmldata = {}
         xmlfile = xml.parse(result)
@@ -24,8 +24,11 @@ class DShieldDataProvider(DataProvider):
             return None
 
         xmlres = self.lookup_ip(target)
-        return InformationSet(self.name, InformationSet.POSITIVE, xmlres)
+        print(xmlres)
+        #print(type(*xmlres))
+        #print(type(**xmlres))
+        return InformationSet(InformationSet.POSITIVE, **xmlres)
 
-    #output=lookup_ip("4.2.2.1")
-    #print(output)
+    output=lookup_ip("4.2.2.1")
+    print(output)
 
