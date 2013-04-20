@@ -14,7 +14,8 @@ class DShieldDataProvider(DataProvider):
         xmldata = {}
         xmlfile = xml.parse(result)
         for xmltag in xmlfile.iter():
-            xmldata[xmltag.tag] = xmltag.text
+            if xmltag.tag == "attacks" or xmltag.tag =="updated" or xmltag.tag == "country" or xmltag.tag =="asname" or xmltag.tag=="abusecontact":
+                xmldata[xmltag.tag] = xmltag.text
         return xmldata
 
     @property
@@ -26,5 +27,12 @@ class DShieldDataProvider(DataProvider):
             return None
 
         xmlres = self.lookup_ip(target)
-        return InformationSet(InformationSet.POSITIVE, **xmlres)
+        threat=InformationSet.FAILURE
+        if int(xmlres["attacks"])< 10:
+            threat=InformationSet.NEGATIVE
+        if int(xmlres["attacks"])>=10 and int(xmlres["attacks"])<=50:
+            threat=InformationSet.INDETERMINATE
+        if int(xmlres["attacks"])>50:
+            threat=InformationSet.POSITIVE
+        return InformationSet(threat, **xmlres)
 
