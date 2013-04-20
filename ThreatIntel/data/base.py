@@ -39,6 +39,7 @@ class InformationSet(object):
     INDETERMINATE = 2
     NEGATIVE = 3
     FAILURE = 4
+    INFORMATIONAL = 5
 
     def __init__(self, pname, disposition, **facets):
         self._pname = pname
