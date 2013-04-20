@@ -20,21 +20,19 @@ class DataProvider(object):
         pass
     
     @staticmethod
-    def queryn(self, target, qtype, providers):
+    def queryn(target, qtype, providers):
         """Return a generator that yields an InformationSet produced by
            querying each specified provider"""
-        g = gevent.pool.Group()
-        itr = g.imap_unordered(lambda p: p.query(target, qtype), providers)
-        while True:
-            ret = None
+        def query1(p, target, qtype):
             try:
-                ret = itr.next()
-            except StopIteration:
-                break
+                return p.query(target, qtype)
             except:
-                yield InformationSet(p.name, InformationSet.FAILURE)
-            if ret != None:
-                yield ret
+                return InformationSet(p.name, InformationSet.FAILURE)
+        g = gevent.pool.Group()
+        l = g.imap_unordered(lambda p: query1(p, target, qtype), providers)
+        for iset in l:
+            if iset != None:
+                yield iset
     
 class InformationSet(object):
     POSITIVE = 1
