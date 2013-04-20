@@ -35,11 +35,11 @@ class DataProvider(object):
                 yield (p, iset)
     
 class InformationSet(object):
-    POSITIVE = 1
-    INDETERMINATE = 2
-    NEGATIVE = 3
-    FAILURE = 4
-    INFORMATIONAL = 5
+    POSITIVE = 1       # The target represents a probable threat
+    INDETERMINATE = 2  # The target may or may not be a probable threat
+    NEGATIVE = 3       # The target is not believed to be a threat
+    FAILURE = 4        # The query was not successfully completed
+    INFORMATIONAL = 5  # The query did not return information about threats
 
     def __init__(self, disposition, **facets):
         self._disposition = disposition
