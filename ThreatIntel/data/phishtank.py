@@ -1,7 +1,7 @@
 import gevent.monkey
 import isodate
 import requests
-from . import DataProvider, InformationSet
+from .base import DataProvider, InformationSet
 
 gevent.monkey.patch_socket()
 
