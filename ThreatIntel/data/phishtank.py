@@ -23,6 +23,10 @@ class PhishTankDataProvider(DataProvider):
         jdata = r.json
         return jdata["results"]
 
+    @property
+    def name(self):
+        return "phishtank"
+
     def query(self, target, qtype):
         # Bail out if this isn't a URL query
         if qtype != DataProvider.URL_QUERY:
