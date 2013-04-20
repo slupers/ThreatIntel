@@ -16,12 +16,15 @@ class DataProvider(object):
     
     @abc.abstractmethod
     def query(self, target, qtype):
+        """Perform a blocking query against this provider"""
         pass
     
     @staticmethod
     def queryn(self, target, qtype, providers):
+        """Return a generator that yields an InformationSet produced by
+           querying each specified provider"""
         g = gevent.pool.Group()
-        itr = g.imap_unordered(lambda p: p.query(target, qtype), provider)
+        itr = g.imap_unordered(lambda p: p.query(target, qtype), providers)
         while True:
             ret = None
             try:
