@@ -15,7 +15,7 @@ class DShieldDataProvider(DataProvider):
     def _dolookup(cls, ip):
         url = cls._urlbase.format(ip)
         r = requests.get(url)
-        xp = xml.etree.ElementTree.XMLParser(encoding="utf-8")
+        xp = xml.etree.cElementTree.XMLParser(encoding="utf-8")
         xp.feed(r.text.encode("utf-8"))
         xtree = xp.close()
         info = {}
