@@ -5,9 +5,11 @@ import cStringIO
 import datetime
 import gevent.monkey
 import json
+import re
+from re import MULTILINE
+import requests
 import socket
 from socket import AF_INET, IPPROTO_TCP, SOCK_STREAM
-import requests
 from .base import DataProvider, InformationSet
 
 gevent.monkey.patch_socket()
@@ -15,7 +17,7 @@ gevent.monkey.patch_socket()
 class ShadowServerDataProvider(DataProvider):
     _whoissvr = "64.71.137.251" # ShadowServer's DNS is FUBAR
     _urlbase = "http://innocuous.shadowserver.org/api/"
-    _urlbasew = "http://bin-test.shadowserver.org/api"
+    _wregex = re.compile("! Whitelisted: (.*?), (.*), (.*)", MULTILINE)
     
     @classmethod
     def _avlookup(cls, target, qtype):
@@ -24,9 +26,14 @@ class ShadowServerDataProvider(DataProvider):
         r = requests.get(cls._urlbase, params=args)
         output = r.text
         if output[0] == "!":
-            if output[2] == "W":
-                if output != "! Whitelisted: null, null, null\n":
-                    return cls._wlookup(target, qtype)
+            if output.startswith("! Whitelisted:"):
+                info = cls._processresw(output)
+                if info != None:
+                    return InformationSet(InformationSet.NEGATIVE, **info)
+            elif output.startswith("! Sorry"):
+                raise RuntimeError("The API query returned an error")
+            elif not output.startswith("! No match found"):
+                raise RuntimeError("Invalid response from ShadowServer")
             return None
         csvend = output.index("\n")
         csvdata = output[0:csvend]
@@ -57,7 +64,7 @@ class ShadowServerDataProvider(DataProvider):
 
     @staticmethod
     def _processres(csvdata, jsondata):
-        # Produce a dictionary from malware query results
+        # Produce a dictionary from positive malware query results
         info = {}
         sio = cStringIO.StringIO(csvdata)
         with contextlib.closing(sio):
@@ -74,57 +81,27 @@ class ShadowServerDataProvider(DataProvider):
         info["av_record_locators"] = json.loads(unicode(jsondata))
         return info
 
-    @staticmethod
-    def _processresw(jsondata):
-        # Produce a dictionary from whitelist query results
-        jdict = json.loads(unicode(jsondata))
-        if len(jdict) == 0:
+    @classmethod
+    def _processresw(cls, wdata):
+        # Produce a dictionary from whitelisted malware query results
+        m = cls._wregex.match(unicode(wdata))
+        if m == None:
             return None
         info = {}
-        for k, v in jdict.iteritems():
-            if k == "source":
-                info["entry_contributor"] = v
-            elif k == "filename":
-                info["file_name"] = v
-            elif k == "crc32":
-                info["sample_crc32"] = binascii.unhexlify(v)
-            elif k == "product_name":
-                info["origin_package"] = v
-            elif k == "mfg_name":
-                info["originator"] = v
-            elif k == "os_name":
-                info["target_os"] = v
-            elif k == "language":
-                info["package_language"] = v
-            elif k == "product_version":
-                info["package_version"] = v
-            elif k == "os_version":
-                info["target_os_version"] = v
-            elif k == "application_type":
-                info["package_category"] = v
-            elif k == "filesize":
-                info["file_size"] = int(v)
-            elif k == "os_mfg":
-                info["target_os_vendor"] = v
+        package_vendor = m.group(1)
+        if len(package_vendor) != 0 and package_vendor != u"null":
+            info["package_vendor"] = package_vendor
+        package_name = m.group(2)
+        if len(package_name) != 0 and package_name != u"null":
+            info["package_name"] = package_name
+        file_name = m.group(3)
+        if len(file_name) != 0 and file_name != u"null":
+            info["file_name"] = file_name
+            
+        # ShadowServer is bugged and returns bogus results for non-matches
+        if len(info) == 0:
+            return None
         return info
-
-    @classmethod
-    def _wlookup(cls, target, qtype):
-        # Retrieve whitelist information by MD5/SHA1 hash
-        if qtype == DataProvider.MD5_QUERY:
-            args = {"md5": target}
-        elif qtype == DataProvider.SHA1_QUERY:
-            args = {"sha1": target}
-        r = requests.get(cls._urlbasew, params=args)
-        output = r.text
-        hashend = output.find(" ")
-        if hashend == -1:
-            return None
-        jsondata = output[hashend + 1:]
-        info = cls._processresw(jsondata)
-        if info == None:
-            return None
-        return InformationSet(InformationSet.NEGATIVE, **info)
 
     @property
     def name(self):
@@ -133,8 +110,6 @@ class ShadowServerDataProvider(DataProvider):
     def query(self, target, qtype):
         if qtype == DataProvider.IPV4_QUERY:
             return self._peerlookup(target)
-        elif qtype == DataProvider.MD5_QUERY:
-            return self._avlookup(target, qtype)
-        elif qtype == DataProvider.SHA1_QUERY:
+        elif qtype in (DataProvider.MD5_QUERY, DataProvider.SHA1_QUERY):
             return self._avlookup(target, qtype)
         return None
