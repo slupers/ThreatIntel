@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import itertools
+from __future__ import absolute_import, division, print_function, unicode_literals
 from data import *
 
 providers = [
@@ -15,10 +15,10 @@ queries = [
     ("000000206738748edd92c4e3d2e823896700f849", DataProvider.SHA1_QUERY)
 ]
 
-res = (DataProvider.queryn(q, t, providers) for (q, t) in queries)
-for p, iset in itertools.chain(*res):
-    print "Provider: {0}".format(p.name)
-    print "Disposition: {0}".format(iset.disposition)
-    for k, v in iset.facets:
-        print "{0}: {1}".format(k, repr(v))
-    print
+for q, t in queries:
+    for p, iset in DataProvider.queryn(q, t, providers):
+        print("Provider: {0}".format(p.name))
+        print("Disposition: {0}".format(iset.disposition))
+        for k, v in iset.facets:
+            print("{0}: {1}".format(k, repr(v)))
+        print()

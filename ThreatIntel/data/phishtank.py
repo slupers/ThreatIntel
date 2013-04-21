@@ -1,3 +1,4 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
 import gevent.monkey
 import isodate
 import requests
@@ -15,7 +16,7 @@ class PhishTankDataProvider(DataProvider):
         # Perform a query against PhishTank
         args = {}
         args["url"] = url
-        args["format"] = u"json"
+        args["format"] = "json"
         if self._apikey != None:
             args["app_key"] = self._apikey
         r = requests.post(self._urlbase, args)
@@ -37,12 +38,12 @@ class PhishTankDataProvider(DataProvider):
             return None
         info = {}
         disp = InformationSet.NEGATIVE
-        if jres["verified"] == u"n":
+        if jres["verified"] == "n":
             disp = InformationSet.INDETERMINATE
         else:
             dval = isodate.parse_datetime(jres["verified_at"])
             info["last_event_ts"] = dval
-            if jres["valid"] != u"n":
+            if jres["valid"] != "n":
                 disp = InformationSet.POSITIVE
         info["report_id"] = int(jres["phish_id"])
         info["report_url"] = jres["phish_detail_page"]

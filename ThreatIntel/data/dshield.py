@@ -1,3 +1,4 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
 import datetime
 import gevent.monkey
 import isodate
@@ -14,9 +15,11 @@ class DShieldDataProvider(DataProvider):
     def _dolookup(cls, ip):
         url = cls._urlbase.format(ip)
         r = requests.get(url)
-        xfile = xml.etree.cElementTree.fromstring(r.text)
+        xp = xml.etree.ElementTree.XMLParser(encoding="utf-8")
+        xp.feed(r.text.encode("utf-8"))
+        xtree = xp.close()
         info = {}
-        for e in xfile.iter():
+        for e in xtree.iter():
             try:
                 cls._mapelement(e, info)
             except:
@@ -34,7 +37,7 @@ class DShieldDataProvider(DataProvider):
 
     @staticmethod
     def _mapelement(e, info):
-        ev = e.text.strip()
+        ev = unicode(e.text, "utf-8").strip()
         if e.tag == "count":
             info["n_attack_packets"] = int(ev)
         elif e.tag == "attacks":
@@ -55,17 +58,17 @@ class DShieldDataProvider(DataProvider):
             dval = datetime.datetime.strptime(ev, "%Y-%m-%d %H:%M:%S")
             info["update_ts"] = dval
         elif e.tag == "country":
-            info["country"] = unicode(ev)
+            info["country"] = ev
         elif e.tag == "as":
             info["as_number"] = int(ev)
         elif e.tag == "asname":
-            info["as_name"] = unicode(ev)
+            info["as_name"] = ev
         elif e.tag == "network":
-            info["network_prefix"] = unicode(ev)
+            info["network_prefix"] = ev
         elif e.tag == "comment":
-            info["comment"] = unicode(ev)
+            info["comment"] = ev
         elif e.tag == "abusecontact":
-            info["abuse_contact"] = unicode(ev)
+            info["abuse_contact"] = ev
 
     @property
     def name(self):
