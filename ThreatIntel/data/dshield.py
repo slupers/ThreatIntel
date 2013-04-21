@@ -18,9 +18,7 @@ class DShieldDataProvider(DataProvider):
         info = {}
         for e in xfile.iter():
             try:
-                k, v = cls._mapelement(e)
-                if k != None:
-                    info[k] = v
+                cls._mapelement(e, info)
             except:
                 pass
         attacks = info.get("attacks")
@@ -35,40 +33,39 @@ class DShieldDataProvider(DataProvider):
         return InformationSet(disp, **info)
 
     @staticmethod
-    def _mapelement(e):
+    def _mapelement(e, info):
+        ev = e.text.strip()
         if e.tag == "count":
-            return ("n_attack_packets", int(e.text))
+            info["n_attack_packets"] = int(ev)
         elif e.tag == "attacks":
-            return ("n_attack_targets", int(e.text))
+            info["n_attack_targets"] = int(ev)
         elif e.tag == "maxdate":
             if e.text == "0":
                 return None
-            dval = datetime.datetime.strptime(e.text, "%Y-%m-%d")
-            return ("data_end", dval.date())
+            dval = datetime.datetime.strptime(ev, "%Y-%m-%d")
+            info["last_event_ts"] = dval.date()
         elif e.tag == "mindate":
             if e.text == "0":
                 return None
-            dval = datetime.datetime.strptime(e.text, "%Y-%m-%d")
-            return ("data_start", dval.date())
+            dval = datetime.datetime.strptime(ev, "%Y-%m-%d")
+            info["first_event_ts"] = dval.date()
         elif e.tag == "updated":
             if e.text == "0":
                 return None
-            dval = datetime.datetime.strptime(e.text, "%Y-%m-%d %H:%M:%S")
-            return ("update_ts", dval)
+            dval = datetime.datetime.strptime(ev, "%Y-%m-%d %H:%M:%S")
+            info["update_ts"] = dval
         elif e.tag == "country":
-            return ("country", e.text)
+            info["country"] = unicode(ev)
         elif e.tag == "as":
-            return ("as_number", int(e.text))
+            info["as_number"] = int(ev)
         elif e.tag == "asname":
-            return ("as_name", e.text)
+            info["as_name"] = unicode(ev)
         elif e.tag == "network":
-            return ("network_prefix", e.text)
+            info["network_prefix"] = unicode(ev)
         elif e.tag == "comment":
-            return ("comment", e.text)
+            info["comment"] = unicode(ev)
         elif e.tag == "abusecontact":
-            return ("abuse_contact", e.text)
-        else:
-            return None
+            info["abuse_contact"] = unicode(ev)
 
     @property
     def name(self):

@@ -33,16 +33,17 @@ class PhishTankDataProvider(DataProvider):
         
         # Produce an output information set
         jres = self._dolookup(target)
+        if jres["in_database"] != True:
+            return None
         info = {}
         disp = InformationSet.NEGATIVE
-        if jres["in_database"] == True:
-            if jres["verified"] == u"n":
-                disp = InformationSet.INDETERMINATE
-            else:
-                dval = isodate.parse_datetime(jres["verified_at"])
-                info["update_ts"] = dval
-                if jres["valid"] != u"n":
-                    disp = InformationSet.POSITIVE
-            info["report_id"] = int(jres["phish_id"])
-            info["report_url"] = jres["phish_detail_page"]
+        if jres["verified"] == u"n":
+            disp = InformationSet.INDETERMINATE
+        else:
+            dval = isodate.parse_datetime(jres["verified_at"])
+            info["last_event_ts"] = dval
+            if jres["valid"] != u"n":
+                disp = InformationSet.POSITIVE
+        info["report_id"] = int(jres["phish_id"])
+        info["report_url"] = jres["phish_detail_page"]
         return InformationSet(disp, **info)
