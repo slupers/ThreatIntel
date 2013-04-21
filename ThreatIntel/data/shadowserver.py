@@ -1,4 +1,4 @@
-from contextlib import closing
+import contextlib
 import gevent.socket
 from socket import AF_INET, IPPROTO_TCP, SOCK_STREAM
 from .base import DataProvider, InformationSet
@@ -9,19 +9,20 @@ class ShadowServerDataProvider(DataProvider):
     @classmethod
     def _peerlookup(cls, target):
         s = gevent.socket.socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
-        with closing(s):
+        with contextlib.closing(s):
             s.connect((cls._whoissvr, 43))
             s.send("peer {0}\n".format(target))
             resp = s.recv(1024)
             cmps = resp.split(" | ")
             info = {}
-            info["peer_as_numbers"] = [int(asn) for asn in cmps[0].split(" ")]
-            info["as_number"] = cmps[1]
-            info["network_prefix"] = cmps[2]
-            info["as_name"] = cmps[3]
-            info["country"] = cmps[4]
-            info["domain"] = cmps[5]
-            info["isp"] = cmps[6]
+            asns = [int(asn) for asn in cmps[0].strip().split(" ")]
+            info["peer_as_numbers"] = asns
+            info["as_number"] = cmps[1].strip()
+            info["network_prefix"] = cmps[2].strip()
+            info["as_name"] = cmps[3].strip()
+            info["country"] = cmps[4].strip()
+            info["domain"] = cmps[5].strip()
+            info["isp"] = cmps[6].strip()
             return InformationSet(InformationSet.INFORMATIONAL, **info)
     
     @staticmethod

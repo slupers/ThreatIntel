@@ -39,7 +39,8 @@ class PhishTankDataProvider(DataProvider):
             if jres["verified"] == u"n":
                 disp = InformationSet.INDETERMINATE
             else:
-                info["verif_ts"] = isodate.parse_datetime(jres["verified_at"])
+                dval = isodate.parse_datetime(jres["verified_at"])
+                info["update_ts"] = dval
                 if jres["valid"] != u"n":
                     disp = InformationSet.POSITIVE
             info["report_id"] = int(jres["phish_id"])

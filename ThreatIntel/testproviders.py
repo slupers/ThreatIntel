@@ -19,3 +19,4 @@ for target, qtype in queries:
         print "Disposition: {0}".format(iset.disposition)
         for k, v in iset.facets:
             print "{0}: {1}".format(k, v)
+        print
