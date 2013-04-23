@@ -15,7 +15,7 @@ from .base import DataProvider, InformationSet
 gevent.monkey.patch_socket()
 
 class ShadowServerDataProvider(DataProvider):
-    _whoissvr = "64.71.137.251" # ShadowServer's DNS is FUBAR
+    _whoissvr = "asn.shadowserver.org"
     _urlbase = "http://innocuous.shadowserver.org/api/"
     _wregex = re.compile("^! Whitelisted: (.*?), (.*), (.*)$")
     
