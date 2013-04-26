@@ -1,6 +1,6 @@
 import requests
 import json
-#from base import DataProvider
+from base import DataProvider
 
 PUBCERT_LOC = './titancert.pem'
 PUBCERT_KEY_LOC = './titancert_key.pem'
@@ -10,7 +10,7 @@ MAX_RESULTS = 50
 class InvalidType(Exception):
     pass
 
-class TitanDataProvider(object):
+class TitanDataProvider(DataProvider):
     _url_base = 'https://titan.qtri.gatech.edu/sample{type}external'
     _supported_types = ('url', 'query', 'sample')
     
