@@ -55,8 +55,8 @@ def query_domain(domain):
 
 def query_url(url):
     ''' Obtain audit results for a URL '''
-    # not implemented in TITAN?
-    pass
+    query = {'url': {'url': url}}
+    return TitanDataProvider.query('result', json.dumps(query)) 
 
 def query_address(addr):
     ''' Obtain audit results for an IP address '''
