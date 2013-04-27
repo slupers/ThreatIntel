@@ -4,7 +4,7 @@ import gevent.monkey
 import isodate
 import requests
 import xml.etree.cElementTree
-from .base import DataProvider, InformationSet
+from .base import *
 
 gevent.monkey.patch_socket()
 
@@ -26,13 +26,13 @@ class DShieldDataProvider(DataProvider):
                 pass
         attacks = info.get("attacks")
         if attacks == None:
-            disp = InformationSet.INDETERMINATE
+            disp = DISP_INDETERMINATE
         elif attacks < 10:
-            disp = InformationSet.NEGATIVE
+            disp = DISP_NEGATIVE
         elif attacks > 50:
-            disp = InformationSet.POSITIVE
+            disp = DISP_POSITIVE
         else:
-            disp = InformationSet.INDETERMINATE
+            disp = DISP_INDETERMINATE
         return InformationSet(disp, **info)
 
     @staticmethod
@@ -75,9 +75,6 @@ class DShieldDataProvider(DataProvider):
         return "dshield"
     
     def query(self, target, qtype):
-        if qtype == DataProvider.IPV4_QUERY:
+        if qtype in (QUERY_IPV4, QUERY_IPV6):
             return self._dolookup(target)
-        elif qtype == DataProvider.IPV6_QUERY:
-            return self._dolookup(target)
-        else:
-            return None
+        return None

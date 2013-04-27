@@ -10,7 +10,7 @@ import re
 import requests
 import socket
 from socket import AF_INET, IPPROTO_TCP, SOCK_STREAM
-from .base import DataProvider, InformationSet
+from .base import *
 
 gevent.monkey.patch_socket()
 
@@ -29,7 +29,7 @@ class ShadowServerDataProvider(DataProvider):
             if output.startswith("! Whitelisted:"):
                 info = cls._processresw(output)
                 if info != None:
-                    return InformationSet(InformationSet.NEGATIVE, **info)
+                    return InformationSet(DISP_NEGATIVE, **info)
             elif output.startswith("! Sorry"):
                 raise RuntimeError("The API query returned an error")
             elif not output.startswith("! No match found"):
@@ -39,7 +39,7 @@ class ShadowServerDataProvider(DataProvider):
         csvdata = output[0:csvend]
         jsondata = output[csvend + 1:]
         info = cls._processres(csvdata, jsondata)
-        return InformationSet(InformationSet.POSITIVE, **info)
+        return InformationSet(DISP_POSITIVE, **info)
     
     @classmethod
     def _peerlookup(cls, target):
@@ -60,7 +60,7 @@ class ShadowServerDataProvider(DataProvider):
             info["country"] = cmps[4]
             info["domain"] = cmps[5]
             info["isp"] = cmps[6]
-            return InformationSet(InformationSet.INFORMATIONAL, **info)
+            return InformationSet(DISP_INFORMATIONAL, **info)
 
     @staticmethod
     def _processres(csvdata, jsondata):
@@ -107,8 +107,8 @@ class ShadowServerDataProvider(DataProvider):
         return "shadowserver"
 
     def query(self, target, qtype):
-        if qtype == DataProvider.IPV4_QUERY:
+        if qtype == QUERY_IPV4:
             return self._peerlookup(target)
-        elif qtype in (DataProvider.MD5_QUERY, DataProvider.SHA1_QUERY):
+        elif qtype in (QUERY_MD5, QUERY_SHA1):
             return self._avlookup(target, qtype)
         return None

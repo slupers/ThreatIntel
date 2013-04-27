@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import gevent.monkey
 import isodate
 import requests
-from .base import DataProvider, InformationSet
+from .base import *
 
 gevent.monkey.patch_socket()
 
@@ -29,7 +29,7 @@ class PhishTankDataProvider(DataProvider):
 
     def query(self, target, qtype):
         # Bail out if this isn't a URL query
-        if qtype != DataProvider.URL_QUERY:
+        if qtype != QUERY_URL:
             return None
         
         # Produce an output information set
@@ -37,14 +37,14 @@ class PhishTankDataProvider(DataProvider):
         if jres["in_database"] != True:
             return None
         info = {}
-        disp = InformationSet.NEGATIVE
+        disp = DISP_NEGATIVE
         if jres["verified"] == "n":
-            disp = InformationSet.INDETERMINATE
+            disp = DISP_INDETERMINATE
         else:
             dval = isodate.parse_datetime(jres["verified_at"])
             info["last_event_ts"] = dval
             if jres["valid"] != "n":
-                disp = InformationSet.POSITIVE
+                disp = DISP_POSITIVE
         info["report_id"] = int(jres["phish_id"])
         info["report_url"] = jres["phish_detail_page"]
         return InformationSet(disp, **info)

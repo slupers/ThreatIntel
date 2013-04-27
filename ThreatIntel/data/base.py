@@ -1,15 +1,22 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import abc
+import collections
 import gevent.pool
+
+QUERY_IPV4 = 1
+QUERY_IPV6 = 2
+QUERY_URL = 3
+QUERY_DOMAIN = 4
+QUERY_MD5 = 5
+QUERY_SHA1 = 6
+DISP_POSITIVE = 1       # The target represents a probable threat
+DISP_INDETERMINATE = 2  # The target may or may not be a probable threat
+DISP_NEGATIVE = 3       # The target is not believed to be a threat
+DISP_FAILURE = 4        # The query was not successfully completed
+DISP_INFORMATIONAL = 5  # The query did not return information about threats
 
 class DataProvider(object):
     __metaclass__ = abc.ABCMeta
-    IPV4_QUERY = 1
-    IPV6_QUERY = 2
-    URL_QUERY = 3
-    DOMAIN_QUERY = 4
-    MD5_QUERY = 5
-    SHA1_QUERY = 6
     
     @abc.abstractproperty
     def name(self):
@@ -24,11 +31,13 @@ class DataProvider(object):
     def queryn(target, qtype, providers):
         """Return a generator that yields an InformationSet produced by
            querying each specified provider"""
+        assert qtype in xrange(1, 7)
         def query1(p, target, qtype):
             try:
                 return (p, p.query(target, qtype))
             except:
-                return (p, InformationSet(InformationSet.FAILURE))
+                raise
+                return (p, InformationSet(DISP_FAILURE))
         g = gevent.pool.Group()
         l = g.imap_unordered(lambda p: query1(p, target, qtype), providers)
         for p, iset in l:
@@ -36,12 +45,7 @@ class DataProvider(object):
                 yield (p, iset)
     
 class InformationSet(object):
-    POSITIVE = 1       # The target represents a probable threat
-    INDETERMINATE = 2  # The target may or may not be a probable threat
-    NEGATIVE = 3       # The target is not believed to be a threat
-    FAILURE = 4        # The query was not successfully completed
-    INFORMATIONAL = 5  # The query did not return information about threats
-
     def __init__(self, disposition, **facets):
+        assert disposition in xrange(1, 6)
         self.disposition = disposition
         self.facets = facets.items()
