@@ -106,7 +106,7 @@ class ShadowServerDataProvider(DataProvider):
     def name(self):
         return "shadowserver"
 
-    def query(self, target, qtype):
+    def _query(self, target, qtype):
         if qtype == QUERY_IPV4:
             return self._peerlookup(target)
         elif qtype in (QUERY_MD5, QUERY_SHA1):

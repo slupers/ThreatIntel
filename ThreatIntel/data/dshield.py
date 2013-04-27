@@ -74,7 +74,7 @@ class DShieldDataProvider(DataProvider):
     def name(self):
         return "dshield"
     
-    def query(self, target, qtype):
+    def _query(self, target, qtype):
         if qtype in (QUERY_IPV4, QUERY_IPV6):
             return self._dolookup(target)
         return None

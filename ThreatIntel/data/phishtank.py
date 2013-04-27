@@ -27,7 +27,7 @@ class PhishTankDataProvider(DataProvider):
     def name(self):
         return "phishtank"
 
-    def query(self, target, qtype):
+    def _query(self, target, qtype):
         # Bail out if this isn't a URL query
         if qtype != QUERY_URL:
             return None

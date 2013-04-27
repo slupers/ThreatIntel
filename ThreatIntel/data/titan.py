@@ -34,6 +34,8 @@ class TitanClient(object):
             params["limit"] = limit
         if sort != None:
             sortj = json.dumps(sort, allow_nan=False, ensure_ascii=False)
+            if isinstance(sortj, str):
+                sortj = sortj.decode()
             params["sort"] = sortj
         
         # Perform the request
@@ -58,7 +60,7 @@ class TitanDataProvider(DataProvider):
     def name(self):
         return "titan"
     
-    def query(self, target, qtype):
+    def _query(self, target, qtype):
         if qtype == QUERY_MD5:
             return self._qhash(target, "md5")
         elif qtype == QUERY_SHA1:
@@ -71,20 +73,24 @@ class TitanDataProvider(DataProvider):
         # Process sample metadata
         info = {}
         for k, v in sample.iteritems():
-            if k == "filename":
-                info["file_name"] = v
-            elif k == "hashes":
-                for k2, v2 in v.iteritems():
-                    if k2 in ("md5", "sha1", "sha256"):
-                        info["sample_" + k2] = binascii.unhexlify(v2["@Hash"])
-            elif k == "ingest_date":
-                ts = long(v["$date"]) / 1000
-                dtv = datetime.datetime.utcfromtimestamp(ts)
-                info["first_event_ts"] = dtv
-            elif k == "last_ingested":
-                ts = long(v["$date"]) / 1000
-                dtv = datetime.datetime.utcfromtimestamp(ts)
-                info["last_event_ts"] = dtv
+            try:
+                if k == "filename":
+                    info["file_name"] = v
+                elif k == "hashes":
+                    for k2, v2 in v.iteritems():
+                        if k2 in ("md5", "sha1", "sha256"):
+                            hexstr = binascii.unhexlify(v2["@Hash"])
+                            info["sample_" + k2] = hexstr
+                elif k == "ingest_date":
+                    ts = long(v["$date"]) / 1000
+                    dtv = datetime.datetime.utcfromtimestamp(ts)
+                    info["first_event_ts"] = dtv
+                elif k == "last_ingested":
+                    ts = long(v["$date"]) / 1000
+                    dtv = datetime.datetime.utcfromtimestamp(ts)
+                    info["last_event_ts"] = dtv
+            except Exception:
+                pass
         
         # Dump analysis information into its own entry
         # FIXME: This is lame
