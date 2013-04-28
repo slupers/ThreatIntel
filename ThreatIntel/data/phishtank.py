@@ -1,10 +1,9 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
+gevent.monkey.patch_socket()
 import gevent.monkey
 import isodate
 import requests
 from .base import *
-
-gevent.monkey.patch_socket()
 
 class PhishTankDataProvider(DataProvider):
     _urlbase = "http://checkurl.phishtank.com/checkurl/"

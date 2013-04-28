@@ -1,12 +1,11 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
-import datetime
 import gevent.monkey
+gevent.monkey.patch_socket()
+import datetime
 import isodate
 import requests
 import xml.etree.cElementTree
 from .base import *
-
-gevent.monkey.patch_socket()
 
 class DShieldDataProvider(DataProvider):
     _urlbase = "http://www.dshield.org/api/ip/{0}"

@@ -1,4 +1,5 @@
 import gevent.monkey
+#gevent.monkey.patch_socket()
 import sys
 import getopt
 import json
@@ -12,8 +13,6 @@ URL_SLOC="https://www.virustotal.com/vtapi/v2/url/report" #Location of URL scan 
 IP_SLOC="https://www.virustotal.com/vtapi/v2/ip-address/report" #Location of IP scan API.
 SCAN_LOC="" #Location of place that will be scanned.
 TEST_IP="90.156.201.27" #This is a test IP address.
-
-#gevent.monkey.patch_socket()
 
 class Query:
     def __init__(self,qLoc):

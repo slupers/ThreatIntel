@@ -9,11 +9,11 @@ providers = [
     TitanDataProvider("data/titan.pem")
 ]
 queries = [
-    #("http://onbe.ru/lISy"),
-    #("http://www.google.com/"),
-    #("4.2.2.1"),
-    #("aca4aad254280d25e74c82d440b76f79"),
-    #("000000206738748edd92c4e3d2e823896700f849"),
+    ("http://onbe.ru/lISy"),
+    ("http://www.google.com/"),
+    ("4.2.2.1"),
+    ("aca4aad254280d25e74c82d440b76f79"),
+    ("000000206738748edd92c4e3d2e823896700f849"),
     ("f099be48e15f5ee375e0b97c18304d813421da79")
 ]
 

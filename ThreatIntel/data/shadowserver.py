@@ -1,9 +1,10 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
+gevent.monkey.patch_socket()
+import gevent.monkey
 import binascii
 import contextlib
 import csv
 import datetime
-import gevent.monkey
 import io
 import json
 import re
@@ -11,8 +12,6 @@ import requests
 import socket
 from socket import AF_INET, IPPROTO_TCP, SOCK_STREAM
 from .base import *
-
-gevent.monkey.patch_socket()
 
 class ShadowServerDataProvider(DataProvider):
     _whoissvr = "asn.shadowserver.org"
@@ -47,9 +46,9 @@ class ShadowServerDataProvider(DataProvider):
         s = socket.socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
         with contextlib.closing(s):
             s.connect((cls._whoissvr, 43))
-            s.send(b"peer {0}\n".format(target))
+            s.send("peer {0}\n".format(target).encode("utf-8"))
             resp = s.recv(1024)
-            cmps = unicode(resp).split(" | ")
+            cmps = unicode(resp, "utf-8").split(" | ")
             if cmps[-1].endswith("\n"):
                 cmps[-1] = cmps[-1][:-1]
             info = {}
