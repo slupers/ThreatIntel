@@ -1,54 +1,97 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
 import abc
+import collections
 import gevent.pool
+import socket
+from socket import AF_INET, AF_INET6
+import string
+import urlparse
+
+QUERY_IPV4 = 1
+QUERY_IPV6 = 2
+QUERY_URL = 3
+QUERY_DOMAIN = 4
+QUERY_MD5 = 5
+QUERY_SHA1 = 6
+DISP_POSITIVE = 1       # The target represents a probable threat
+DISP_INDETERMINATE = 2  # The target may or may not be a probable threat
+DISP_NEGATIVE = 3       # The target is not believed to be a threat
+DISP_FAILURE = 4        # The query was not successfully completed
+DISP_INFORMATIONAL = 5  # The query did not return information about threats
 
 class DataProvider(object):
     __metaclass__ = abc.ABCMeta
-    IPV4_QUERY = 1
-    IPV6_QUERY = 2
-    URL_QUERY = 3
-    DOMAIN_QUERY = 4
-    MD5_QUERY = 5
-    SHA1_QUERY = 6
     
     @abc.abstractproperty
     def name(self):
+        """Return an identifier for this provider"""
         pass
     
-    @abc.abstractmethod
-    def query(self, target, qtype):
+    def query(self, target):
         """Perform a blocking query against this provider"""
-        pass
+        ntarget, qtype = DataProvider._sanitize(target)
+        try:
+            return self._query(ntarget, qtype)
+        except Exception:
+            return InformationSet(DISP_FAILURE)
     
     @staticmethod
-    def queryn(target, qtype, providers):
+    def queryn(target, providers):
         """Return a generator that yields an InformationSet produced by
            querying each specified provider"""
-        def query1(p, target, qtype):
+        ntarget, qtype = DataProvider._sanitize(target)
+        def query1(p):
             try:
-                return (p, p.query(target, qtype))
+                return (p, p._query(ntarget, qtype))
             except:
-                return (p, InformationSet(InformationSet.FAILURE))
+                return (p, InformationSet(DISP_FAILURE))
         g = gevent.pool.Group()
-        l = g.imap_unordered(lambda p: query1(p, target, qtype), providers)
+        l = g.imap_unordered(query1, providers)
         for p, iset in l:
             if iset != None:
                 yield (p, iset)
     
+    @abc.abstractmethod
+    def _query(self, target, qtype):
+        pass
+    
+    @staticmethod
+    def _sanitize(target):
+        # Attempt to process as a hash
+        if all((c in string.hexdigits for c in target)):
+            if len(target) == 32:
+                return target.lower(), QUERY_MD5
+            elif len(target) == 40:
+                return target.lower(), QUERY_SHA1
+        
+        # Attempt to process as a canonicalized IPv4 address
+        try:
+            packed = socket.inet_pton(AF_INET, target)
+            target = socket.inet_ntop(AF_INET, packed)
+            return target, QUERY_IPV4
+        except Exception:
+            pass
+        
+        # Attempt to process as a canonicalized IPv6 address
+        try:
+            packed = socket.inet_pton(AF_INET6, target)
+            target = socket.inet_ntop(AF_INET6, packed)
+            return target, QUERY_IPV6
+        except Exception:
+            pass
+        
+        # Attempt to process as a URL
+        try:
+            urlparse.urlsplit(target)
+            return target, QUERY_URL
+        except Exception:
+            pass
+        
+        # If we're here, the input is invalid
+        raise ValueError(b"Unrecognized query input")
+    
 class InformationSet(object):
-    POSITIVE = 1       # The target represents a probable threat
-    INDETERMINATE = 2  # The target may or may not be a probable threat
-    NEGATIVE = 3       # The target is not believed to be a threat
-    FAILURE = 4        # The query was not successfully completed
-    INFORMATIONAL = 5  # The query did not return information about threats
-
     def __init__(self, disposition, **facets):
-        self._disposition = disposition
-        self._facets = frozenset(facets.iteritems())
-    
-    @property
-    def disposition(self):
-        return self._disposition
-    
-    @property
-    def facets(self):
-        return self._facets
+        assert disposition in xrange(1, 6)
+        self.disposition = disposition
+        self.facets = facets.items()

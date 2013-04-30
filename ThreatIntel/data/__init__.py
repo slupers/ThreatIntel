@@ -1,4 +1,6 @@
-from base import DataProvider, InformationSet
-from phishtank import PhishTankDataProvider
-from dshield import DShieldDataProvider
-from shadowserver import ShadowServerDataProvider
+from __future__ import absolute_import, division, print_function, unicode_literals
+from .base import *
+from .phishtank import *
+from .dshield import *
+from .shadowserver import *
+from .titan import *

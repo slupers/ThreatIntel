@@ -1,4 +1,5 @@
 import gevent.monkey
+#gevent.monkey.patch_socket()
 import sys
 import getopt
 import json
@@ -7,8 +8,6 @@ import urllib2
 import pprint
 from base import DataProvider, InformationSet
 
-
-#gevent.monkey.patch_socket()
 
 class Query:
     def __init__(self,qLoc):
