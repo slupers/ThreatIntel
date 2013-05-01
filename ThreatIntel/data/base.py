@@ -22,17 +22,7 @@ DISP_INFORMATIONAL = 5  # The query did not return information about threats
 
 class DataProvider(object):
     __metaclass__ = abc.ABCMeta
-    _dnssegment = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.I)
-
-    # Courtesy of http://stackoverflow.com/questions/2532053/validate-a-hostname-string
-    @staticmethod
-    def _validatefqdn(fqdn):
-        if len(fqdn) > 255:
-            return False
-        if fqdn[-1:] == ".":
-            fqdn = fqdn[:-1]
-        segments = fqdn.split(".")
-        return all(DataProvider._dnssegment.match(x) for x in segments)
+    _tldsegment = re.compile(r"^[A-Z0-9][A-Z0-9-]*[A-Z0-9]$", re.I)
     
     @abc.abstractproperty
     def name(self):
@@ -69,6 +59,9 @@ class DataProvider(object):
     
     @staticmethod
     def _sanitize(target):
+        # Ensure that we received a Unicode string
+        assert isinstance(target, unicode)
+        
         # Attempt to process as a hash
         if all((c in string.hexdigits for c in target)):
             if len(target) == 32:
@@ -79,22 +72,25 @@ class DataProvider(object):
         # Attempt to process as a canonicalized IPv4 address
         try:
             packed = socket.inet_pton(AF_INET, target)
-            target = socket.inet_ntop(AF_INET, packed)
-            return target, QUERY_IPV4
+            ntarget = socket.inet_ntop(AF_INET, packed)
+            return ntarget, QUERY_IPV4
         except Exception:
             pass
         
         # Attempt to process as a canonicalized IPv6 address
         try:
             packed = socket.inet_pton(AF_INET6, target)
-            target = socket.inet_ntop(AF_INET6, packed)
-            return target, QUERY_IPV6
+            ntarget = socket.inet_ntop(AF_INET6, packed)
+            return ntarget, QUERY_IPV6
         except Exception:
             pass
         
         # Attempt to process as a domain
-        if DataProvider._validatefqdn(target):
-            return target, QUERY_DOMAIN
+        try:
+            ntarget = DataProvider._sanitizefqdn(target)
+            return ntarget, QUERY_DOMAIN
+        except Exception:
+            pass
         
         # Attempt to process as a URL
         try:
@@ -110,6 +106,27 @@ class DataProvider(object):
         
         # If we're here, the input is invalid
         raise ValueError(b"Unrecognized query input")
+    
+    @staticmethod
+    def _sanitizefqdn(fqdn):
+        if len(fqdn) == 0:
+            raise ValueError(b"Invalid length for FQDN")
+        if fqdn[-1:] == ".":
+            fqdn = fqdn[:-1]
+        punycode = fqdn.encode("idna")
+        if len(punycode) > 254:
+            raise ValueError(b"Invalid length for FQDN")
+        segments = punycode.split(".")
+        if len(segments) == 0:
+            return "."
+        if any(len(s) not in xrange(1, 64) for s in segments):
+            raise ValueError(b"Invalid DNS label length")
+        tld = segments[-1]
+        if DataProvider._tldsegment.match(tld) == None:
+            raise ValueError(b"Invalid DNS top-level domain")
+        if tld.isdigit():
+            raise ValueError(b"Invalid DNS top-level domain")
+        return punycode + "."
     
 class InformationSet(object):
     def __init__(self, disposition, **facets):
