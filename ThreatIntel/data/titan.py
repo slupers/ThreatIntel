@@ -51,21 +51,23 @@ class TitanClient(object):
         cpiper, cpipew = os.pipe()
         try:
             kpiper, kpipew = os.pipe()
-            os.write(cpipew, self._cert_pem)
-            os.write(kpipew, self._key_pem)
-            fd = cpipew
-            cpipew = None
-            os.close(fd)
-            fd = kpipew
-            kpipew = None
-            os.close(fd)
-            cpath = "/proc/self/fd/{0}".format(cpiper)
-            kpath = "/proc/self/fd/{0}".format(kpiper)
-            r = requests.post(self._queryurl, cert=(cpath, kpath), data=params, verify=False)
+            try:
+                os.write(cpipew, self._cert_pem)
+                os.write(kpipew, self._key_pem)
+                fd = cpipew
+                cpipew = None
+                os.close(fd)
+                fd = kpipew
+                kpipew = None
+                os.close(fd)
+                cpath = "/proc/self/fd/{0}".format(cpiper)
+                kpath = "/proc/self/fd/{0}".format(kpiper)
+                r = requests.post(self._queryurl, cert=(cpath, kpath), data=params, verify=False)
+            finally:
+                os.close(kpiper)
+                if kpipew != None:
+                    os.close(kpipew)
         finally:
-            os.close(kpiper)
-            if kpipew != None:
-                os.close(kpipew)
             os.close(cpiper)
             if cpipew != None:
                 os.close(cpipew)
