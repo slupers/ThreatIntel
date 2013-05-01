@@ -1,3 +1,4 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
 import gevent.monkey
 #gevent.monkey.patch_socket()
 import sys
@@ -6,14 +7,13 @@ import json
 import urllib
 import urllib2
 import pprint
-from base import DataProvider, InformationSet
-
+from .base import *
 
 class Query:
     def __init__(self,qLoc):
         self.queryLoc=qLoc
         self.resultJSON=dict()
-        self.result=InformationSet.INDETERMINATE
+        self.result=DISP_FAILURE
     def setThreat(self,res):
         self.result=res
     def getThreatCode(self):
@@ -27,7 +27,7 @@ class Query:
        return self.resultJSON
     def getResultSummary(self):
         '''This returns important data about the result as a dictionary'''
-        results=dict()
+        results=dict() #Change the names to be more consistent.
         #If we are looking at IPs, we may have to look in a specific key.
         if 'response_code' in self.resultJSON:
             results['response_code']=self.resultJSON['response_code']
@@ -38,11 +38,16 @@ class Query:
         if 'total' in self.resultJSON:
             results['total']=self.resultJSON['total']
         if 'scan_date' in self.resultJSON:
-            results['scan_date']=self.resultJSON['scan_date']
+            results['last_event_ts']=self.resultJSON['scan_date']
         if 'url' in self.resultJSON:
             results['scan_url']=self.resultJSON['url']
         return results
 
+#Convert tabs to spaces.
+#Make code more readable and look good.
+#Look at PhishTank code to fix syntax.
+#Python requests.
+#Make key consistent with the other APIs.
 class VirusTotalDataProvider(DataProvider):
     URL_SLOC="https://www.virustotal.com/vtapi/v2/url/report" #Location of URL scan API.
     IP_SLOC="https://www.virustotal.com/vtapi/v2/ip-address/report" #Location of IP scan API.
@@ -60,18 +65,20 @@ class VirusTotalDataProvider(DataProvider):
         response=urllib2.urlopen(req)
         jsonStr=response.read()
         jStr=json.loads(jsonStr)
-        print 'Positives:'+str(jStr['positives'])
-        print 'Total Scans:'+str(jStr['total'])
-
+        
         if jStr['positives']>2:
-            query.setThreat(InformationSet.POSITIVE)
+            query.setThreat(DISP_POSITIVE)
         elif jStr['positives']==0:
-            query.setThreat(InformationSet.NEGATIVE)
+            query.setThreat(DISP_NEGATIVE)
         else:
-            query.setThreat(InformationSet.INDETERMINATE)
+            query.setThreat(DISP_INDETERMINATE)
             query.setResults(jStr)    
 
-    def scanIP(query):
+    @property
+    def name(self):
+        return "virustotal"
+
+    def scanIP(self,query):
         '''This method scans an IP address
            There is currently a socket error here'''
         parameters = {'ip':'173.194.46.67', 'apikey':self._apikey}
@@ -79,27 +86,24 @@ class VirusTotalDataProvider(DataProvider):
         response_dict = json.loads(response)
 
         if('resolutions' in response_dict)==False: #We are querying an invalid IP address.
-            query.setThreat(InformationSet.INDETERMINATE)
+            query.setThreat(DISP_INDETERMINATE)
             query.setResults(response_dict)
             return
 
-        print 'Response code :'+str(response_dict['response_code'])
-        print 'Verbose Message :'+str(response_dict['verbose_msg'])
-        print 'Number of resolutions: '+str(len(response_dict['resolutions']))  
         pp=pprint.PrettyPrinter(indent=4)
         pp.pprint(response_dict)
         
         if  ('detected_urls' in response_dict)==False:#Sometimes, data about the scan is not sent.
-            query.setThreat(InformationSet.POSITIVE)
+            query.setThreat(DISP_POSITIVE)
             query.setResults(response_dict)
             return
         sumData=response_dict['detected_urls']
         if sumData['positives']>2: 
-            query.setThreat(InformationSet.POSITIVE)
+            query.setThreat(DISP_POSITIVE)
         elif sumData['positives']==0:
-            query.setThreat(InformationSet.NEGATIVE)
+            query.setThreat(DISP_NEGATIVE)
         else:
-            query.setThreat(InformationSet.INDETERMINATE) 
+            query.setThreat(DISP_INDETERMINATE) 
             query.setResults(response_dict)
 
     def retrieveReport(query):
@@ -110,43 +114,22 @@ class VirusTotalDataProvider(DataProvider):
         response_dict = json.loads(response)
         query.setResults(response_dict)
 
-    def printFunctionError(function):
-        print "Issue with "+function.name
 
         
-    def __query(self,target,qtype):
-       scanURL.name="URL Scan"
-       scanIP.name="IP scan"
-       retrieveReport.name="Retrieve domain report"
-       aDict={"1":scanURL,"2":scanIP,"3":retrieveReport}    
+    def _query(self,target,qtype):
+       aDict={QUERY_URL:self.scanURL,QUERY_IPV4:self.scanIP,QUERY_DOMAIN:self.retrieveReport}    
       
        while True:
            #qLoc=raw_input("Enter location to query")
            qLoc=target
            query=Query(qLoc)
-     
-           var='' 
-           if qtype==QUERY_URL:
-               var='1'
-           elif qtype==QUERY_IPV6:
-               var='2'
-           elif qtype==QUERY_DOMAIN:
-               var='3'
-
-           try:
-               aDict[var](query)
-               pp=pprint.PrettyPrinter(indent=4)
-               pp.pprint(query.getResultData())
-           except ValueError:
-               print "Issue with JSON data received."
-               printFunctionError(aDict[var])
-           except ValueError:
-               print "Value error when attempting to get data from JSON."
-               printFunctionError(aDict[var])
+            
+           if (qtype in aDict):
+               aDict[qtype](query)
+  
 
            results=InformationSet(query.getThreatCode(),**query.getResultSummary())
            return results
       
-    if __name__ == "__main__":
-        main()
+   
 
