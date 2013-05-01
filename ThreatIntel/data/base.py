@@ -1,3 +1,5 @@
+# FIXME: SWLC - Put Django's license here
+
 from __future__ import absolute_import, division, print_function, unicode_literals
 import abc
 import collections
@@ -7,6 +9,7 @@ import rfc3987
 import socket
 from socket import AF_INET, AF_INET6
 import string
+import urllib
 
 QUERY_IPV4 = 1
 QUERY_IPV6 = 2
@@ -89,7 +92,7 @@ class DataProvider(object):
         
         # Attempt to process as a URL
         try:
-            ntarget = DataProvider._sanitizeurl(target)
+            ntarget = DataProvider._sanitizewebiri(target)
             return ntarget, QUERY_URL
         except Exception:
             pass
@@ -106,14 +109,14 @@ class DataProvider(object):
     
     @staticmethod
     def _sanitizefqdn(fqdn):
+        if fqdn == ".":
+            return fqdn
         if fqdn[-1:] == ".":
             fqdn = fqdn[:-1]
         punycode = fqdn.encode("idna")
         if len(punycode) > 254:
             raise ValueError(b"Invalid length for FQDN")
         segments = punycode.split(".")
-        if len(segments) == 1:
-            return "."
         if any(len(s) not in xrange(1, 64) for s in segments):
             raise ValueError(b"Invalid DNS label length")
         tld = segments[-1]
@@ -124,19 +127,21 @@ class DataProvider(object):
         return punycode + "."
         
     @staticmethod
-    def _sanitizeurl(url):
-        res = rfc3987.parse(url, b"IRI")
-        scheme = res[b"scheme"].lower()
-        if scheme not in ("http", "https"):
-            raise ValueError(b"URL does not represent a Web address")
+    def _sanitizewebiri(iri):
+        res = rfc3987.parse(iri, b"IRI")
+        scheme = res[b"scheme"]
+        if scheme == None or scheme.lower() not in ("http", "https"):
+            raise ValueError(b"IRI does not represent a Web address")
         authority = res[b"authority"]
         if authority == None or len(authority) == 0:
-            raise ValueError(b"URL does not specify a host")
+            raise ValueError(b"IRI does not specify a host")
         authority = DataProvider._sanitizefqdn(authority)[:-1]
         if len(authority) == 0:
-            raise ValueError(b"URL does not specify a host")
+            raise ValueError(b"IRI does not specify a host")
         res[b"authority"] = authority
-        return rfc3987.compose(**res)
+        iri = rfc3987.compose(**res)
+        uri = urllib.quote(iri.encode("utf-8"), safe=b"/#%[]=:;$&()+,!?*@'~")
+        return unicode(uri)
     
 class InformationSet(object):
     def __init__(self, disposition, **facets):
