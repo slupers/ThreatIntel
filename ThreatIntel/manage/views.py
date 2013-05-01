@@ -20,21 +20,40 @@ def query(request):
         form = QueryForm(request.POST)
         if form.is_valid():
             query = request.POST.get('query')
-            api_info = handle_query(request.user.username)
-            # handle the query...
-            # get dictionary of data from each API
+            api_info = handle_query(request.user.username, query)
         else:
-            state = 'Invalid form. Please make sure both "Query" and "Query type" are specified.'
+            state = 'Invalid form. Try again.'
 
     form = QueryForm()
     # pass in the dictionary of data for each API
     return render_to_response('query.html', {'form': form, 'state': state, 'api_info': api_info}, RequestContext(request))
 
 
-def handle_query(user):
+def handle_query(user, query):
     '''Get info for query entered by user'''
-    api_info = [1,2,3,4]
+    api_info = []
+
+    # get api keys of the user
     account = apikeys.objects.get(user=user)
+
+    # intialize providers
+    dshield = DShieldDataProvider()
+    sserver = ShadowServerDataProvider()
+    ptank = PhishTankDataProvider(apikey=account.ptankkey)
+
+    # get data for query
+    data = DataProvider.queryn(query, [dshield, sserver, ptank])
+
+    # parse data from query
+    for d in data:
+        d_dic = {}
+        d_dic['name'] = d[0].name
+        d_dic['disposition'] = d[1].disposition
+        d_dic['facets'] = {}
+        for facet in d[1].facets:
+            d_dic['facets'][facet[0]] = facet[1]
+
+        api_info.append(d_dic)
     
     return api_info
     #'titankey': account.titankey, 'icskey': account.icskey, 'dshieldkey': account.dshieldkey, 'cifkey': account.cifkey, 'vtotkey': account.vtotkey, 'ptankkey': account.ptankkey, 'sserverkey': account.sserverkey
