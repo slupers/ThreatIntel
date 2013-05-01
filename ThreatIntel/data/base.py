@@ -22,8 +22,17 @@ DISP_INFORMATIONAL = 5  # The query did not return information about threats
 
 class DataProvider(object):
     __metaclass__ = abc.ABCMeta
-    # Courtesy of http://regexlib.com/redetails.aspx?regexp_id=1735
-    _dnsregex = re.compile(r"(?=^.{1,254}$)(^(?:(?!\d+\.|-)[a-zA-Z0-9_\-]{1,63}(?<!-)\.?)+(?:[a-zA-Z]{2,})$)")
+    _dnssegment = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.I)
+
+    # Courtesy of http://stackoverflow.com/questions/2532053/validate-a-hostname-string
+    @staticmethod
+    def _validatefqdn(fqdn):
+        if len(fqdn) > 255:
+            return False
+        if fqdn[-1:] == ".":
+            fqdn = fqdn[:-1]
+        segments = fqdn.split(".")
+        return all(DataProvider._dnssegment.match(x) for x in segments)
     
     @abc.abstractproperty
     def name(self):
@@ -84,7 +93,7 @@ class DataProvider(object):
             pass
         
         # Attempt to process as a domain
-        if DataProvider._dnsregex.match(target) != None:
+        if DataProvider._validatefqdn(target):
             return target, QUERY_DOMAIN
         
         # Attempt to process as a URL
