@@ -8,15 +8,20 @@
 /* The rest of CSS */
 body { 
 	font:100% normal Arial, Helvetica, sans-serif; 
-	background:#161712;
+	font-size:16px;
+    background:#161712;
 	color:#ffffff;
 } 
 
-form,select,textarea {
+form,textarea {
 	margin:0; 
 	padding:0; 
 	color:#ffffff;
 } 
+
+.select {
+    color:#000000
+}
 
 .header { 
 	color:#33CCFF; 
