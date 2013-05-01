@@ -61,6 +61,8 @@ class DataProvider(object):
     def _sanitize(target):
         # Ensure that we received a Unicode string
         assert isinstance(target, unicode)
+        if len(target) == 0:
+            raise ValueError(b"Unrecognized query input")
         
         # Attempt to process as a hash
         if all((c in string.hexdigits for c in target)):
@@ -85,22 +87,17 @@ class DataProvider(object):
         except Exception:
             pass
         
+        # Attempt to process as a URL
+        try:
+            ntarget = DataProvider._sanitizeurl(target)
+            return ntarget, QUERY_URL
+        except Exception:
+            pass
+        
         # Attempt to process as a domain
         try:
             ntarget = DataProvider._sanitizefqdn(target)
             return ntarget, QUERY_DOMAIN
-        except Exception:
-            pass
-        
-        # Attempt to process as a URL
-        try:
-            res = rfc3987.parse(target, b"absolute_IRI")
-            scheme = res[b"scheme"].lower()
-            authority = res[b"authority"]
-            if authority == None:
-                authority = ""
-            if scheme in ("http", "https") and len(authority) > 0:
-                return target, QUERY_URL
         except Exception:
             pass
         
@@ -109,8 +106,6 @@ class DataProvider(object):
     
     @staticmethod
     def _sanitizefqdn(fqdn):
-        if len(fqdn) == 0:
-            raise ValueError(b"Invalid length for FQDN")
         if fqdn[-1:] == ".":
             fqdn = fqdn[:-1]
         punycode = fqdn.encode("idna")
@@ -127,6 +122,21 @@ class DataProvider(object):
         if tld.isdigit():
             raise ValueError(b"Invalid DNS top-level domain")
         return punycode + "."
+        
+    @staticmethod
+    def _sanitizeurl(url):
+        res = rfc3987.parse(url, b"IRI")
+        scheme = res[b"scheme"].lower()
+        if scheme not in ("http", "https"):
+            raise ValueError(b"URL does not represent a Web address")
+        authority = res[b"authority"]
+        if authority == None or len(authority) == 0:
+            raise ValueError(b"URL does not specify a host")
+        authority = DataProvider._sanitizefqdn(authority)[:-1]
+        if len(authority) == 0:
+            raise ValueError(b"URL does not specify a host")
+        res[b"authority"] = authority
+        return rfc3987.compose(**res)
     
 class InformationSet(object):
     def __init__(self, disposition, **facets):
