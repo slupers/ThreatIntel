@@ -15,8 +15,9 @@ body {
 
 form,textarea {
 	margin:0; 
-	padding:0; 
-	color:#ffffff;
+	padding:10px 10px;
+    text-align:center; 
+    color:#ffffff;
 } 
 
 .select {
@@ -89,8 +90,8 @@ form,textarea {
 } 
 
 .box .button{ 
-	text-align:right;
-	padding-right: 30px; 
+	text-align:center;
+	padding: 10px 10px; 
 }
 
 .box p{
