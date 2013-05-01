@@ -6,7 +6,8 @@ providers = [
     PhishTankDataProvider(),
     DShieldDataProvider(),
     ShadowServerDataProvider(),
-    TitanDataProvider("data/titan.pem")
+    TitanDataProvider("data/titan.pem"),
+    #VirusTotalDataProvider("dbce9de07aa81b144cba2d2a2cb0bdd5d5c6ce5283af40a2544ed9e4301e7526")
 ]
 queries = [
     ("http://onbe.ru/lISy"),
