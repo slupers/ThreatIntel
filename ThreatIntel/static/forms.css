@@ -34,9 +34,8 @@ form,textarea {
 
 }
  
-
 .table,td,th {
-    width:100%;
+    width:50%;
 }
 
 .state {
