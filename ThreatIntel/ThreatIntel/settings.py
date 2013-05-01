@@ -9,13 +9,24 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASES = {
+CPANEL_DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'luperso1_threat',
         'HOST': 'engr-cpanel-mysql.engr.illinois.edu',
         'USER': 'luperso1_master',
         'PASSWORD': 'sec460lab'
+    }
+}
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'djangostack',
+        'HOST': '/opt/djangostack-1.4.5-0/mysql/tmp/mysql.sock',
+        'PORT': '33060',
+        'USER': 'bitnami',
+        'PASSWORD': 'ad1a131288'
     }
 }
 

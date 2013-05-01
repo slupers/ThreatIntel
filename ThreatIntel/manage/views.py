@@ -3,14 +3,33 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from manage.models import *
-#from subprocess import call
-#import os, time
-#from stat import *
+
+
+# the decorator prevents access and redirects users who have not logged in
+@login_required(redirect_field_name='/login')
+def query(request):
+    '''Takes user's query and processes it'''
+    state = ''
+    if request.method == 'POST':
+        # put user-entered information in form
+        form = QueryForm(request.POST)
+        if form.is_valid():
+            query = request.POST.get('query')
+            query_type = request.POST.get('query_type')
+            # handle the query...
+            # get dictionary of data from each API
+        else:
+            state = 'Invalid form. Please make sure both "Query" and "Query type" are specified.'
+
+    form = QueryForm()
+    # pass in the dictionary of data for each API
+    return render_to_response('query.html', {'form': form, 'state': state}, RequestContext(request))
+
 
 # the decorator prevents access and redirects users who have not logged in
 @login_required(redirect_field_name='/login')
 def get_keys(request):
-    '''Displays uploaded files and lets users upload new files'''
+    '''Processes and displays keys API keys entered by user'''
     user = request.user.username
     state = 'Please enter your API keys'
     # if user submitted the form
