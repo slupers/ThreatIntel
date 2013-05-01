@@ -20,7 +20,7 @@ form,textarea {
     color:#ffffff;
 }
 
-select {
+.select {
 	margin:0;
 	padding:0;
 	color:#000000;
@@ -31,6 +31,10 @@ select {
 	font-size:64px; 
 	text-transform:uppercase; 
 	text-align:center;
+}
+ 
+.table,td,th {
+    width:50%;
 }
 
 .state {
@@ -95,6 +99,25 @@ select {
 	text-align:center;
 	padding: 10px 10px; 
 }
+
+.disp-positive{
+    padding: 10px 10px;
+    color:00ff00;
+}
+
+.disp-negative{
+    padding: 10px 10px;
+    color:ff0000;
+}
+
+.disp-indeterminate{
+    padding: 10px 10px;
+    color:0000ff;
+}
+
+
+
+
 
 .box p{
 	text-align: center;
