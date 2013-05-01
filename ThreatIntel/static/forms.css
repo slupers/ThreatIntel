@@ -2,7 +2,7 @@
 #list5 { color:#eee; }
 #list5 ul { font-size:18px; }
 #list5 ul li { }
-#list5 ul li ul { list-style-image: url("/opt/djangostack-1.4.5-0/apps/django/django_projects/SerloBox/SerloBox/static/nested.png"); padding:5px 0 5px 18px; font-size:15px; }
+#list5 ul li ul { list-style-image: url("/home/slupers/GitWorkspace/ThreatIntel/ThreatIntel/static/nested.png"); padding:5px 0 5px 18px; font-size:15px; }
 #list5 ul li ul li { color:#bfe1f1; height:15px; margin-left:10px; }
 
 /* The rest of CSS */
@@ -18,10 +18,12 @@ form,textarea {
 	padding:10px 10px;
     text-align:center; 
     color:#ffffff;
-} 
+}
 
-.select {
-    color:#000000
+select {
+	margin:0;
+	padding:0;
+	color:#000000;
 }
 
 .header { 
@@ -29,7 +31,7 @@ form,textarea {
 	font-size:64px; 
 	text-transform:uppercase; 
 	text-align:center;
-} /
+}
 
 .state {
 	margin:0 auto;

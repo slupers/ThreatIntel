@@ -17,12 +17,28 @@
 	<form action="/query" method="post">
 	<div class="box">
 	{% csrf_token %}
-	{{ form }}
-		<div class="button">
-			<input type="submit" value="Submit query" />
-		</div>
+	
+	{{ form }}<div class="button">
+				<input type="submit" value="Submit query" />
+			</div>
 	</div>
 	</form>
+
+	<br></br>
+
+	<table>
+		{% for api in api_info %}
+		<tr>
+			<td colspan="2">{{ api }}</td>
+			<td>col2</td>
+			<td>col3</td>
+		</tr>
+		{% endfor %}
+	</table>
+
 </body>
+
+
+
 </html>
 

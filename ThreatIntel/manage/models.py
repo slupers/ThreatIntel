@@ -27,11 +27,11 @@ class KeysForm(ModelForm):
 
 class qry(models.Model):
 	query = models.CharField(max_length=512)
-	query_type = models.CharField(max_length=255, choices=[('ipv4','IPv4'),('ipv6','IPv6'),('fqdn','FQDN'),('url','URL'),('hash','Malware hash')])
+	#query_type = models.CharField(max_length=255, choices=[('ipv4','IPv4'),('ipv6','IPv6'),('fqdn','FQDN'),('url','URL'),('hash','Malware hash')])
 
 class QueryForm(ModelForm):
 	class Meta:
 		model = qry
-		fields = ('query', 'query_type')
+		fields = ('query',)#, 'query_type')
 
 

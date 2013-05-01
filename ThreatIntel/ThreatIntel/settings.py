@@ -9,7 +9,7 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-CPANEL_DATABASES = {
+DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'luperso1_threat',
@@ -19,7 +19,7 @@ CPANEL_DATABASES = {
     }
 }
 
-DATABASES = {
+CPANEL_DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'djangostack',
@@ -78,14 +78,14 @@ STATIC_ROOT = ''
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
-STATIC_URL = '/home/slupers/ThreatIntel/static/'
+STATIC_URL = '/home/slupers/GitWorkspace/ThreatIntel/ThreatIntel/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-	'/home/slupers/ThreatIntel/static',
+	'/home/slupers/GitWorkspace/ThreatIntel/ThreatIntel/static',
 )
 
 LOGIN_URL = '/login/'
@@ -129,7 +129,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-	'/home/slupers/ThreatIntel/templates',
+	'/home/slupers/GitWorkspace/ThreatIntel/ThreatIntel/templates',
     #'/home/carlo/djangostack-1.4.5-0/apps/django/django_projects/SerloBox/templates'
 )
 
