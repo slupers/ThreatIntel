@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
-gevent.monkey.patch_socket()
 import gevent.monkey
+gevent.monkey.patch_socket()
 import isodate
 import requests
 from .base import *
