@@ -15,8 +15,15 @@ class TitanClient(object):
     SORT_DESCENDING = -1
     _queryurl = "https://titan.gtri.gatech.edu/submitqueryexternal"
     
-    def __init__(self, encodedcert):
-        self._encodedcert = encodedcert
+    def __init__(self, cert_pem, key_pem):
+        if isinstance(cert_pem, unicode):
+            cert_pem = cert_pem.encode("utf-8")
+        if isinstance(key_pem, unicode):
+            key_pem = key_pem.encode("utf-8")
+        assert isinstance(cert_pem, str)
+        assert isinstance(key_pem, str)
+        self._cert_pem = cert_pem
+        self._key_pem = key_pem
     
     def query(self, collection, query, limit=None, skip=None, sort=None):
         # Encode the query payload
@@ -41,14 +48,29 @@ class TitanClient(object):
         
         # Perform the request
         # HACK: This SSL cert load code is a ridiculous hack
-        piper, pipew = os.pipe()
+        cpiper, cpipew = os.pipe()
         try:
-            certfile = "/proc/self/fd/{0}".format(piper)
-            os.write(pipew, self._encodedcert)
-            r = requests.post(self._queryurl, cert=certfile, data=params, verify=False)
+            kpiper, kpipew = os.pipe()
+            os.write(cpipew, self._cert_pem)
+            os.write(kpipew, self._key_pem)
+            fd = cpipew
+            cpipew = None
+            os.close(fd)
+            fd = kpipew
+            kpipew = None
+            os.close(fd)
+            cpath = "/proc/self/fd/{0}".format(cpiper)
+            kpath = "/proc/self/fd/{0}".format(kpiper)
+            r = requests.post(self._queryurl, cert=(cpath, kpath), data=params, verify=False)
         finally:
-            os.close(piper)
-            os.close(pipew)
+            os.close(kpiper)
+            if kpipew != None:
+                os.close(kpipew)
+            os.close(cpiper)
+            if cpipew != None:
+                os.close(cpipew)
+        
+        # Process the result
         outputj = r.json()
         ok = outputj.get("ok")
         if ok == None:
@@ -61,9 +83,8 @@ class TitanClient(object):
         return result
 
 class TitanDataProvider(DataProvider):    
-    def __init__(self, certpath):
-        assert isinstance(certpath, unicode)
-        self._client = TitanClient(certpath)
+    def __init__(self, cert_pem, key_pem):
+        self._client = TitanClient(cert_pem, key_pem)
     
     @property
     def name(self):
