@@ -117,7 +117,7 @@ class DataProvider(object):
         if len(punycode) > 254:
             raise ValueError(b"Invalid length for FQDN")
         segments = punycode.split(".")
-        if len(segments) == 0:
+        if len(segments) == 1:
             return "."
         if any(len(s) not in xrange(1, 64) for s in segments):
             raise ValueError(b"Invalid DNS label length")
