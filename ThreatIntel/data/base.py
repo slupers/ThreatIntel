@@ -2,10 +2,11 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import abc
 import collections
 import gevent.pool
+import re
+import rfc3987
 import socket
 from socket import AF_INET, AF_INET6
 import string
-import urlparse
 
 QUERY_IPV4 = 1
 QUERY_IPV6 = 2
@@ -21,6 +22,8 @@ DISP_INFORMATIONAL = 5  # The query did not return information about threats
 
 class DataProvider(object):
     __metaclass__ = abc.ABCMeta
+    # Courtesy of http://regexlib.com/redetails.aspx?regexp_id=1735
+    _dnsregex = re.compile(r"(?=^.{1,254}$)(^(?:(?!\d+\.|-)[a-zA-Z0-9_\-]{1,63}(?<!-)\.?)+(?:[a-zA-Z]{2,})$)")
     
     @abc.abstractproperty
     def name(self):
@@ -80,10 +83,19 @@ class DataProvider(object):
         except Exception:
             pass
         
+        # Attempt to process as a domain
+        if DataProvider._dnsregex.match(target) != None:
+            return target, QUERY_DOMAIN
+        
         # Attempt to process as a URL
         try:
-            urlparse.urlsplit(target)
-            return target, QUERY_URL
+            res = rfc3987.parse(target, b"absolute_IRI")
+            scheme = res[b"scheme"].lower()
+            authority = res[b"authority"]
+            if authority == None:
+                authority = ""
+            if scheme in ("http", "https") and len(authority) > 0:
+                return target, QUERY_URL
         except Exception:
             pass
         
