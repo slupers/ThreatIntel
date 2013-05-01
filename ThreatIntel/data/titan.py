@@ -6,6 +6,7 @@ import binascii
 import datetime
 import json
 import numbers
+import os
 import requests
 from .base import *
 
@@ -14,8 +15,8 @@ class TitanClient(object):
     SORT_DESCENDING = -1
     _queryurl = "https://titan.gtri.gatech.edu/submitqueryexternal"
     
-    def __init__(self, certpath):
-        self._certpath = certpath
+    def __init__(self, encodedcert):
+        self._encodedcert = encodedcert
     
     def query(self, collection, query, limit=None, skip=None, sort=None):
         # Encode the query payload
@@ -39,7 +40,15 @@ class TitanClient(object):
             params["sort"] = sortj
         
         # Perform the request
-        r = requests.post(self._queryurl, cert=self._certpath, data=params, verify=False)
+        # HACK: This SSL cert load code is a ridiculous hack
+        piper, pipew = os.pipe()
+        try:
+            certfile = "/proc/self/fd/{0}".format(piper)
+            os.write(pipew, self._encodedcert)
+            r = requests.post(self._queryurl, cert=certfile, data=params, verify=False)
+        finally:
+            os.close(piper)
+            os.close(pipew)
         outputj = r.json()
         ok = outputj.get("ok")
         if ok == None:
