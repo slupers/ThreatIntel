@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from data import *
 
 providers = [
-    #PhishTankDataProvider(),
-    #DShieldDataProvider(),
+    PhishTankDataProvider(),
+    DShieldDataProvider(),
     ShadowServerDataProvider(),
     TitanDataProvider("data/titan.pem")
 ]
