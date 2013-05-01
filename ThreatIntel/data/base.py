@@ -49,6 +49,7 @@ class DataProvider(object):
             try:
                 return (p, p._query(ntarget, qtype))
             except:
+                raise
                 return (p, InformationSet(DISP_FAILURE))
         g = gevent.pool.Group()
         l = g.imap_unordered(query1, providers)
