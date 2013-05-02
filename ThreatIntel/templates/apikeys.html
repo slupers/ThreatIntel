@@ -1,16 +1,17 @@
-<link rel="stylesheet" href="{{STATIC_URL}}forms.css" />
 
-<a href="/logout" text-align:right>Logout</a>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <title>API Keys</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="{{STATIC_URL}}forms.css" />
 </head>
 
-<div class="header">ThreatIntel</div>
 <body>
+	<a href="/logout" text-align:right>Logout</a>
+	<div class="header">ThreatIntel</div>
+
 	<div class="state"><h2>{{ state }}</h2></div>
 	<form action="/manage" method="post">
 	<div class="box">

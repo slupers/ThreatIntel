@@ -1,0 +1,42 @@
+{% load custom_filters %}
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<title>Query</title>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" href="{{STATIC_URL}}forms.css" />
+</head>
+
+<body>
+	<a href="/logout" text-align:right>Logout</a>
+	<div class="header">ThreatIntel</div>
+	<h3>{{ state }}</h3>
+	<form action="/query" method="post">
+	<div class="box">
+	{% csrf_token %}
+	
+	{{ form }}<div class="button">
+				<input type="submit" value="Submit query" />
+			</div>
+	</div>
+	</form>
+
+	<br></br>
+
+		{% for api in api_info %}
+			<h2>{{ api|key:"name" }}</h2>
+				{% with api|key:"facets" as facets %}
+					{% for key,value in facets.items %}
+						<table>
+							<tr>
+								<td><b>{{ key }}</b></td>
+								<td>{{ value }}</td>
+							</tr>
+						</table>
+					{% endfor %}
+				{% endwith %}
+		{% endfor %}
+
+</body>
+</html>
