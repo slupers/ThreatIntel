@@ -16,41 +16,7 @@
 	<form action="/manage" method="post">
 	<div class="box">
 		{% csrf_token %}
-		<label>
-			<span>TITAN:</span>
-			<input type="text" name="titankey" value="{{ titankey }}" /><br />
-		</label>
-
-		<label>
-			<span>ICS SIE:</span>
-			<input type="text" name="icskey" value="{{ icskey }}" /><br />
-		</label>
-
-		<label>
-			<span>DShield:</span>
-			<input type="text" name="dshieldkey" value="{{ dshieldkey }}" /><br />
-		</label>
-		
-		<label>
-			<span>CIF:</span>
-			<input type="text" name="cifkey" value="{{ cifkey }}" /><br />
-		</label>
-
-		<label>
-			<span>VirusTotal:</span>
-			<input type="text" name="vtotkey" value="{{ vtotkey }}" /><br />
-		</label>
-
-		<label>
-			<span>PhishTank:</span>
-			<input type="text" name="ptankkey" value="{{ ptankkey }}" /><br />
-		</label>
-
-		<label>
-			<span>ShadowServer:</span>
-			<input type="text" name="sserverkey" value="{{ sserverkey }}" /><br />
-		</label>
-
+		{{ form.as_p }}
 		<div class="button">
 			<input type="submit" value="Submit keys" />
 		</div>
