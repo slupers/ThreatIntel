@@ -40,9 +40,10 @@ def handle_query(user, query):
     dshield = DShieldDataProvider()
     sserver = ShadowServerDataProvider()
     ptank = PhishTankDataProvider(apikey=account.ptankkey)
+    vt = VirusTotalDataProvider(apikey=account.vtotkey)
 
     # get data for query
-    data = DataProvider.queryn(query, [dshield, sserver, ptank])
+    data = DataProvider.queryn(query, [dshield, sserver, ptank, vt])
 
     # parse data from query
     for d in data:

@@ -1,12 +1,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import gevent.monkey
-#gevent.monkey.patch_socket()
-import sys
-import getopt
-import json
-import urllib
-import urllib2
-import pprint
+gevent.monkey.patch_socket()
+gevent.monkey.patch_ssl()
 import requests
 from .base import *
 
