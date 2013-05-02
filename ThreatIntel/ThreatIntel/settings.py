@@ -61,11 +61,8 @@ INSTALLED_APPS = (
 )
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "luperso1_threat",
-        "HOST": "engr-cpanel-mysql.engr.illinois.edu",
-        "USER": "luperso1_master",
-        "PASSWORD": "sec460lab"
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(SITE_BASE, "db.sqlite3")
     }
 }
 
