@@ -48,29 +48,24 @@ class TitanClient(object):
         
         # Perform the request
         # HACK: This SSL cert load code is a ridiculous hack
-        cpiper, cpipew = os.pipe()
+        cpiper = cpipew = kpiper = kpipew = None
         try:
+            cpiper, cpipew = os.pipe()
             kpiper, kpipew = os.pipe()
             try:
                 os.write(cpipew, self._cert_pem)
                 os.write(kpipew, self._key_pem)
-                fd = cpipew
-                cpipew = None
-                os.close(fd)
-                fd = kpipew
-                kpipew = None
-                os.close(fd)
-                cpath = "/proc/self/fd/{0}".format(cpiper)
-                kpath = "/proc/self/fd/{0}".format(kpiper)
-                r = requests.post(self._queryurl, cert=(cpath, kpath), data=params, verify=False)
             finally:
-                os.close(kpiper)
-                if kpipew != None:
-                    os.close(kpipew)
-        finally:
-            os.close(cpiper)
-            if cpipew != None:
                 os.close(cpipew)
+                os.close(kpipew)
+                cpipew = kpipew = None
+            cpath = "/proc/self/fd/{0}".format(cpiper)
+            kpath = "/proc/self/fd/{0}".format(kpiper)
+            r = requests.post(self._queryurl, cert=(cpath, kpath), data=params, verify=False)
+        finally:
+            for fd in (cpiper, cpipew, kpiper, kpipew):
+                if fd != None:
+                    os.close(fd)
         
         # Process the result
         outputj = r.json()
