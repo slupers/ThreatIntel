@@ -15,8 +15,6 @@ framework.
 """
 import gevent.monkey
 gevent.monkey.patch_all()
-import pymysql
-pymysql.install_as_MySQLdb()
 import django.core.wsgi
 import os
 
