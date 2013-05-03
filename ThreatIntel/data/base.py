@@ -37,8 +37,11 @@ class DataProvider(object):
         ntarget, qtype = DataProvider._sanitize(target)
         try:
             return self._query(ntarget, qtype)
+        except QueryError as e:
+            msg = e.message
         except Exception as e:
-            return InformationSet(DISP_FAILURE, message=e.message)
+            msg = "An internal error occurred"
+        return InformationSet(DISP_FAILURE, message=msg)
     
     @staticmethod
     def queryn(target, providers):
@@ -48,8 +51,11 @@ class DataProvider(object):
         def query1(p):
             try:
                 return (p, p._query(ntarget, qtype))
+            except QueryError as e:
+                msg = e.message
             except Exception as e:
-                return (p, InformationSet(DISP_FAILURE, message=e.message))
+                msg = "An internal error occurred"
+            return (p, InformationSet(DISP_FAILURE, message=msg))
         g = gevent.pool.Group()
         l = g.imap_unordered(query1, providers)
         for p, iset in l:
@@ -112,18 +118,18 @@ class DataProvider(object):
         if fqdn.endswith("."):
             fqdn = fqdn[:-1]
         if len(fqdn) == 0:
-            raise ValueError(b"Invalid length for FQDN")
+            raise ValueError() # Is the root domain
         punycode = fqdn.encode("idna")
         if len(punycode) > 254:
-            raise ValueError(b"Invalid length for FQDN")
+            raise ValueError() # Overlength FQDN
         segments = punycode.split(".")
         if any(len(s) not in xrange(1, 64) for s in segments):
-            raise ValueError(b"Invalid DNS label length")
+            raise ValueError() # Overlength segment
         tld = segments[-1]
         if DataProvider._tldsegment.match(tld) == None:
-            raise ValueError(b"Invalid DNS top-level domain")
+            raise ValueError() # Doesn't meet TLD naming rules
         if tld.isdigit():
-            raise ValueError(b"Invalid DNS top-level domain")
+            raise ValueError() # Doesn't meet TLD naming rules
         return punycode + "."
         
     @staticmethod
@@ -131,14 +137,11 @@ class DataProvider(object):
         res = rfc3987.parse(iri, b"IRI")
         scheme = res[b"scheme"]
         if scheme == None or scheme.lower() not in ("http", "https"):
-            raise ValueError(b"IRI does not represent a Web address")
+            raise ValueError() # Not a Web address
         authority = res[b"authority"]
         if authority == None or len(authority) == 0:
-            raise ValueError(b"IRI does not specify a host")
-        authority = DataProvider._sanitizefqdn(authority)[:-1]
-        if len(authority) == 0:
-            raise ValueError(b"IRI does not specify a host")
-        res[b"authority"] = authority
+            raise ValueError() # No host specified
+        res[b"authority"] = DataProvider._sanitizefqdn(authority)[:-1]
         iri = rfc3987.compose(**res)
         uri = urllib.quote(iri.encode("utf-8"), safe=b"/#%[]=:;$&()+,!?*@'~")
         return unicode(uri)
@@ -148,3 +151,6 @@ class InformationSet(object):
         assert disposition in xrange(1, 6)
         self.disposition = disposition
         self.facets = facets.items()
+
+class QueryError(RuntimeError):
+    pass

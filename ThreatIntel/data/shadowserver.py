@@ -30,9 +30,9 @@ class ShadowServerDataProvider(DataProvider):
                 if info != None:
                     return InformationSet(DISP_NEGATIVE, **info)
             elif output.startswith("! Sorry"):
-                raise RuntimeError("The API query returned an error")
+                raise QueryError(b"Query failed")
             elif not output.startswith("! No match found"):
-                raise RuntimeError("Invalid response from ShadowServer")
+                raise QueryError(b"Invalid response from server")
             return None
         csvend = output.index("\n")
         csvdata = output[0:csvend]
@@ -68,14 +68,20 @@ class ShadowServerDataProvider(DataProvider):
         with io.BytesIO(csvdata.encode("utf-8")) as bio:
             cr = csv.reader(bio)
             row = [unicode(f, "utf-8") for f in cr.next()]
-            info["sample_md5"] = binascii.unhexlify(row[0])
-            info["sample_sha1"] = binascii.unhexlify(row[1])
-            dval = datetime.datetime.strptime(row[2], "%Y-%m-%d %H:%M:%S")
-            info["first_event_ts"] = dval
-            dval = datetime.datetime.strptime(row[3], "%Y-%m-%d %H:%M:%S")
-            info["last_event_ts"] = dval
-            info["file_type"] = row[4]
-            info["sample_ssdeep"] = row[5]
+            if len(row[0]) > 0:
+                info["sample_md5"] = binascii.unhexlify(row[0])
+            if len(row[1]) > 0:
+                info["sample_sha1"] = binascii.unhexlify(row[1])
+            if len(row[2]) > 0:
+                dval = datetime.datetime.strptime(row[2], "%Y-%m-%d %H:%M:%S")
+                info["first_event_ts"] = dval
+            if len(row[3]) > 0:
+                dval = datetime.datetime.strptime(row[3], "%Y-%m-%d %H:%M:%S")
+                info["last_event_ts"] = dval
+            if len(row[4]) > 0:
+                info["file_type"] = row[4]
+            if len(row[5]) > 0:
+                info["sample_ssdeep"] = row[5]
         info["av_record_locators"] = json.loads(jsondata)
         return info
 

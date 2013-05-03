@@ -25,17 +25,20 @@ class VirusTotalClient(object):
             else:
                 assert False
             r.raise_for_status()
-            if r.status_code == 204:
+            if r.status_code == 200:
+                break
+            elif r.status_code == 204:
                 gevent.sleep(60)
             else:
-                break
+                msg = b"Query failed: HTTP error {0}".format(r.status_code)
+                raise QueryError(msg)
         res = r.json()
         rcode = res.get("response_code")
         if rcode == None or rcode < 0:
             msg = res.get("verbose_msg")
             if msg == None:
                 msg = "(unknown)"
-            raise RuntimeError(b"Query failed: {0}".format(msg))
+            raise QueryError(b"Query failed: {0}".format(msg))
         return res
     
     def query_fqdn(self, domain):
