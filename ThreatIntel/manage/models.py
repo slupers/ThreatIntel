@@ -2,8 +2,8 @@ from django.forms import ModelForm
 from django.db import models
 from django.contrib.auth.models import User
 
-class apikeys(models.Model):
-    user = models.OneToOneField(User, primary_key=True)
+class UserConfiguration(models.Model):
+    user = models.OneToOneField(User, related_name="config", primary_key=True)
     titancert = models.TextField(blank=True)
     titankey = models.TextField(blank=True)
     cifkey = models.CharField(max_length=36, blank=True)
@@ -12,7 +12,7 @@ class apikeys(models.Model):
 
 class KeysForm(ModelForm):
     class Meta:
-        model = apikeys
+        model = UserConfiguration
         fields = ('titancert', 'titankey', 'cifkey', 'vtotkey', 'ptankkey')
     def __init__(self, *args, **kwargs):
         super(KeysForm, self).__init__(*args, **kwargs)

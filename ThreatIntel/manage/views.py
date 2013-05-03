@@ -20,7 +20,7 @@ def query(request):
         form = QueryForm(request.POST)
         if form.is_valid():
             query = request.POST.get('query')
-            api_info = handle_query(request.user.username, query)
+            api_info = handle_query(request.user, query)
         else:
             state = 'Invalid form. Try again.'
 
@@ -34,7 +34,7 @@ def handle_query(user, query):
     api_info = []
 
     # get api keys of the user
-    account = apikeys.objects.get(user__username=user)
+    account = user.config
 
     # intialize providers
     providers = []
@@ -74,14 +74,12 @@ def handle_query(user, query):
 @login_required(redirect_field_name='/login')
 def get_keys(request):
     '''Processes and displays keys API keys entered by user'''
-    user = request.user
     state = 'Please enter your API keys'
     # if user submitted the form
     try:
-        inst = apikeys.objects.get(user=user)
-    except apikeys.DoesNotExist:
+        inst = request.user.config
+    except UserConfiguration.DoesNotExist:
         inst = None
-    print(inst)
     if request.method == 'POST':
         form = KeysForm(request.POST, instance=inst)
         if form.is_valid():
