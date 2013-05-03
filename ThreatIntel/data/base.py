@@ -37,8 +37,8 @@ class DataProvider(object):
         ntarget, qtype = DataProvider._sanitize(target)
         try:
             return self._query(ntarget, qtype)
-        except Exception:
-            return InformationSet(DISP_FAILURE)
+        except Exception as e:
+            return InformationSet(DISP_FAILURE, message=e.message)
     
     @staticmethod
     def queryn(target, providers):
@@ -48,8 +48,8 @@ class DataProvider(object):
         def query1(p):
             try:
                 return (p, p._query(ntarget, qtype))
-            except:
-                return (p, InformationSet(DISP_FAILURE))
+            except Exception as e:
+                return (p, InformationSet(DISP_FAILURE, message=e.message))
         g = gevent.pool.Group()
         l = g.imap_unordered(query1, providers)
         for p, iset in l:

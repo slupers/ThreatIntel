@@ -2,117 +2,116 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import gevent.monkey
 gevent.monkey.patch_socket()
 gevent.monkey.patch_ssl()
+import binascii
+import datetime
+import gevent
 import requests
 from .base import *
 
-class Query:
-    def __init__(self,qLoc):
-        self.queryLoc=qLoc
-        self.resultJSON=dict()
-    def setThreat(self,res):
-        self.resultJSON['response_code']=res
-    def getThreatCode(self):
-        if 'resonse_code' in self.resultJSON:
-            return self.resultJSON['response_code']
-        else:
-            return DISP_INDETERMINATE
-    def getQueryLoc(self):
-        return self.queryLoc
-    def setResults(self,data):
-        '''Saves the results as a dictionary'''
-        self.resultJSON=data
-    def getResultData(self):
-       return self.resultJSON
-    def getResultSummary(self):
-        '''This returns important data about the result as a dictionary'''
-        results=dict() #Change the names to be more consistent.
-        #If we are looking at IPs, we may have to look in a specific key.
-        if 'response_code' in self.resultJSON:
-            results['response_code']=self.resultJSON['response_code']
-        if 'permalink' in self.resultJSON:
-            results['permalink']=self.resultJSON['permalink']
-        if 'positives' in self.resultJSON:
-            results['positives']=self.resultJSON['positives']
-        if 'total' in self.resultJSON:
-            results['total']=self.resultJSON['total']
-        if 'scan_date' in self.resultJSON:
-            results['last_event_ts']=self.resultJSON['scan_date']
-        if 'url' in self.resultJSON:
-            results['scan_url']=self.resultJSON['url']
-        return results
-
-#Convert tabs to spaces.
-#Make code more readable and look good.
-class VirusTotalDataProvider(DataProvider):
-    URL_SLOC="https://www.virustotal.com/vtapi/v2/url/report" #Location of URL scan API.
-    IP_SLOC="https://www.virustotal.com/vtapi/v2/ip-address/report" #Location of IP scan API.
-    SCAN_LOC="" #Location of place that will be scanned.
-    TEST_IP="90.156.201.27" #This is a test IP address.
-
+class VirusTotalClient(object):
+    _endpoint = "https://www.virustotal.com/vtapi/v2/{0}/report"
+    
     def __init__(self, apikey):
         self._apikey = apikey
+    
+    def _get_report(self, rtype, method, **params):
+        endpoint = VirusTotalClient._endpoint.format(rtype)
+        params["apikey"] = self._apikey
+        while True:
+            if method == "GET":
+                r = requests.request(method, endpoint, params=params)
+            elif method == "POST":
+                r = requests.request(method, endpoint, data=params)
+            else:
+                assert False
+            r.raise_for_status()
+            if r.status_code == 204:
+                gevent.sleep(60)
+            else:
+                break
+        res = r.json()
+        rcode = res.get("response_code")
+        if rcode == None or rcode < 0:
+            msg = res.get("verbose_msg")
+            if msg == None:
+                msg = "(unknown)"
+            raise RuntimeError(b"Query failed: {0}".format(msg))
+        return res
+    
+    def query_fqdn(self, domain):
+        assert domain.endswith(".")
+        domain = domain[:-1] # Strip the trailing period
+        return self._get_report("domain", "GET", domain=domain)
+    
+    def query_ipv4(self, ip):
+        return self._get_report("ip-address", "GET", ip=ip)
+    
+    def query_url(self, resource, scan):
+        scan = 1 if scan else 0
+        return self._get_report("url", "POST", resource=resource, scan=scan)
 
-    def scanURL(self,query): 
-        '''This method scans a URL and prints the number of positive scans'''
-        parameters={"resource":query.getQueryLoc(), "apikey":self._apikey}
-        r=requests.post(self.URL_SLOC,parameters) 
-        jStr=r.json()     
-        if jStr['positives']>2:
-            query.setThreat(DISP_POSITIVE)
-        elif jStr['positives']==0:
-            query.setThreat(DISP_NEGATIVE)
-        else:
-            query.setThreat(DISP_INDETERMINATE)
-            query.setResults(jStr)    
+class VirusTotalDataProvider(DataProvider):
+    _keyregex = re.compile(r"^[A-F0-9]{64}$", re.I)
+
+    def __init__(self, apikey):
+        if not isinstance(apikey, basestring):
+            raise ValueError(b"Invalid VirusTotal API key")
+        if self._keyregex.match(apikey) == None:
+            raise ValueError(b"Invalid VirusTotal API key")
+        self._client = VirusTotalClient(apikey)
 
     @property
     def name(self):
         return "virustotal"
 
-    def scanIP(self,query):
-        '''This method scans an IP address
-           There is currently a socket error here'''
-        parameters = {'ip':'173.194.46.67', 'apikey':self._apikey}
-        r=requests.post(self.URL_SLOC,parameters)
-        try:
-            response_dict =r.json()
-            if('resolutions' in response_dict)==False: #We are querying an invalid IP address.
-                query.setThreat(DISP_INDETERMINATE)
-                query.setResults(response_dict)
-                return        
-            if  ('detected_urls' in response_dict)==False:#Sometimes, data about the scan is not sent.
-                query.setThreat(DISP_POSITIVE)
-                query.setResults(response_dict)
-                return
-            sumData=response_dict['detected_urls']
-            if sumData['positives']>2: 
-                query.setThreat(DISP_POSITIVE)
-            elif sumData['positives']==0:
-                query.setThreat(DISP_NEGATIVE)
-            else:
-                query.setThreat(DISP_INDETERMINATE) 
-                query.setResults(response_dict)
-        except ValueError:
-            query.setThreat(DISP_FAILURE) 
-
-    def retrieveReport(query):
-        '''This method scans a domain and returns results for that domain'''
-        url = 'https://www.virustotal.com/vtapi/v2/domain/report'
-        parameters = {'domain': '027.ru', 'apikey':self._apikey}
-        r=requests.post(self.URL_SLOC,parameters)
-        response_dict =r.json()
-        query.setResults(response_dict)
+    @staticmethod
+    def _parse(res):
+        # Process each unit of data returned
+        info = {}
+        positives = None
+        for k, v in res.iteritems():
+            if k in ("md5", "sha1", "sha256"):
+                info["sample_" + k] = binascii.unhexlify(v)
+            elif k == "scan_date":
+                dtv = datetime.datetime.strptime(v, "%Y-%m-%d %H:%M:%S")
+                info["last_event_ts"] = dtv
+            elif k == "positives":
+                info["n_scans_positive"] = positives = v
+            elif k == "total":
+                info["n_scans"] = v
+            elif k == "scans":
+                info["scan_details"] = v # FIXME
+            elif k == "permalink":
+                info["report_url"] = v
+            elif k == "resolutions":
+                info["fqdn_matches"] = v # FIXME
+            elif k == "detected_communicating_samples":
+                info["dcs"] = v # FIXME
+            elif k == "detected_urls":
+                info["malware_matches"] = v # FIXME
         
-    def _query(self,target,qtype):
+        # Decide on a disposition
+        if positives == None:
+            disp = DISP_INFORMATIONAL
+        elif positives > 2:
+            disp = DISP_POSITIVE
+        elif positives == 0:
+            disp = DISP_NEGATIVE
+        else:
+            disp = DISP_INDETERMINATE
+        return InformationSet(disp, **info)
+        
+    def _query(self, target, qtype):
+        if qtype == QUERY_URL:
+            res = self._client.query_url(target, True)
+        elif qtype == QUERY_IPV4:
+            res = self._client.query_ipv4(target)
+        elif qtype == QUERY_DOMAIN:
+            res = self._client.query_fqdn(target)
+        else:
+            return None
+        return self._parse(res)
 
-       aDict={QUERY_URL:self.scanURL,QUERY_IPV4:self.scanIP,QUERY_DOMAIN:self.retrieveReport}      
-       while True:
-           qLoc=target
-           query=Query(qLoc)
-           if (qtype in aDict):
-               aDict[qtype](query)
-           results=InformationSet(query.getThreatCode(),**query.getResultSummary())
-           return results
-      
-   
-
+__all__ = [
+    b"VirusTotalDataProvider"
+]
