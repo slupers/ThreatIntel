@@ -15,13 +15,14 @@ class VirusTotalClient(object):
         self._apikey = apikey
     
     def _get_report(self, rtype, method, **params):
-        endpoint = VirusTotalClient._endpoint.format(rtype)
+        # Perform the request
+        endpoint = self._endpoint.format(rtype)
         params["apikey"] = self._apikey
         while True:
             if method == "GET":
-                r = requests.request(method, endpoint, params=params)
+                r = requests.get(endpoint, params=params)
             elif method == "POST":
-                r = requests.request(method, endpoint, data=params)
+                r = requests.post(endpoint, data=params)
             else:
                 assert False
             r.raise_for_status()
@@ -32,6 +33,8 @@ class VirusTotalClient(object):
             else:
                 msg = b"Query failed: HTTP error {0}".format(r.status_code)
                 raise QueryError(msg)
+        
+        # Decode and check for errors
         res = r.json()
         rcode = res.get("response_code")
         if rcode == None or rcode < 0:
@@ -42,15 +45,19 @@ class VirusTotalClient(object):
         return res
     
     def query_fqdn(self, domain):
+        """Retrieve VirusTotal information for the specified fully qualified
+           domain name."""
         assert domain.endswith(".")
         domain = domain[:-1] # Strip the trailing period
         return self._get_report("domain", "GET", domain=domain)
     
     def query_ipv4(self, ip):
+        """Retrieve VirusTotal information for the specified IPv4 address."""
         return self._get_report("ip-address", "GET", ip=ip)
     
     def query_url(self, resource, scan):
-        scan = 1 if scan else 0
+        """Retrieve VirusTotal information for the specified Web address."""
+        scan = int(scan)
         return self._get_report("url", "POST", resource=resource, scan=scan)
 
 class VirusTotalDataProvider(DataProvider):
