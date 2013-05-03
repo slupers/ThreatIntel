@@ -19,20 +19,22 @@ class VirusTotalClient(object):
         endpoint = self._endpoint.format(rtype)
         params["apikey"] = self._apikey
         while True:
-            if method == "GET":
-                r = requests.get(endpoint, params=params)
-            elif method == "POST":
-                r = requests.post(endpoint, data=params)
-            else:
-                assert False
-            r.raise_for_status()
-            if r.status_code == 200:
-                break
-            elif r.status_code == 204:
+            try:
+                if method == "GET":
+                    r = requests.get(endpoint, params=params)
+                elif method == "POST":
+                    r = requests.post(endpoint, data=params)
+                else:
+                    assert False
+                r.raise_for_status()
+            except Exception as e:
+                raise QueryError(e.message)
+            if r.status_code == 204:
                 gevent.sleep(60)
+            elif r.status_code != 200:
+                raise QueryError(b"Unexpected HTTP response")
             else:
-                msg = b"Query failed: HTTP error {0}".format(r.status_code)
-                raise QueryError(msg)
+                break
         
         # Decode and check for errors
         res = r.json()
