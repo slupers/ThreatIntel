@@ -37,13 +37,23 @@ def handle_query(user, query):
     account = apikeys.objects.get(user__username=user)
 
     # intialize providers
-    dshield = DShieldDataProvider()
-    sserver = ShadowServerDataProvider()
-    ptank = PhishTankDataProvider(apikey=account.ptankkey)
-    vt = VirusTotalDataProvider(apikey=account.vtotkey)
+    providers = []
+    providers.append(DShieldDataProvider())
+    providers.append(ShadowServerDataProvider())
+    ptankkey = account.ptankkey
+    if len(ptankkey) == 0:
+        ptankkey = None
+    providers.append(PhishTankDataProvider(apikey=ptankkey))
+    vtotkey = account.vtotkey
+    if len(vtotkey) != 0:
+        providers.append(VirusTotalDataProvider(apikey=vtotkey))
+    titancert = account.titancert
+    titankey = account.titankey
+    if len(titancert) != 0 and len(titankey) != 0:
+        providers.append(TitanDataProvider(titancert, titankey))
 
     # get data for query
-    data = DataProvider.queryn(query, [dshield, sserver, ptank, vt])
+    data = DataProvider.queryn(query, providers)
 
     # parse data from query
     for d in data:
