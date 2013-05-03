@@ -109,10 +109,10 @@ class DataProvider(object):
     
     @staticmethod
     def _sanitizefqdn(fqdn):
-        if fqdn == ".":
-            return fqdn
-        if fqdn[-1:] == ".":
+        if fqdn.endswith("."):
             fqdn = fqdn[:-1]
+        if len(fqdn) == 0:
+            raise ValueError(b"Invalid length for FQDN")
         punycode = fqdn.encode("idna")
         if len(punycode) > 254:
             raise ValueError(b"Invalid length for FQDN")
