@@ -48,19 +48,24 @@ class ShadowServerDataProvider(DataProvider):
             s.connect((cls._whoissvr, 43))
             s.send("peer {0}\n".format(target).encode("utf-8"))
             resp = s.recv(1024)
-            cmps = unicode(resp, "utf-8").split(" | ")
-            if cmps[-1].endswith("\n"):
-                cmps[-1] = cmps[-1][:-1]
-            info = {}
-            info["peer_as_numbers"] = [int(asn) for asn in cmps[0].split(" ")]
-            info["as_number"] = int(cmps[1])
-            info["network_prefix"] = cmps[2]
-            info["as_name"] = cmps[3]
-            info["country"] = cmps[4]
-            info["domain"] = cmps[5]
-            info["isp"] = cmps[6]
-            return InformationSet(DISP_INFORMATIONAL, **info)
-
+        cmps = resp.decode("utf-8").split(" | ")
+        if cmps[-1].endswith("\n"):
+            cmps[-1] = cmps[-1][:-1]
+        
+        # Produce an InformationSet from the data
+        peers = EntityList(("as_number", ))
+        for asn in cmps[0].split(" "):
+            peers.append((int(asn), ))
+        info = AttributeList()
+        info.append(("country", cmps[4]))
+        info.append(("as_number", int(cmps[1])))
+        info.append(("as_name", cmps[3]))
+        info.append(("network_prefix", cmps[2]))
+        info.append(("peer_as_list", peers))
+        info.append(("domain", cmps[5]))
+        info.append(("isp", cmps[6]))
+        return InformationSet(DISP_INFORMATIONAL, info)
+    
     @staticmethod
     def _processres(csvdata, jsondata):
         # Produce a dictionary from positive malware query results

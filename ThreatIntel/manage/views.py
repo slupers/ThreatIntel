@@ -39,7 +39,7 @@ def handle_query(user, query):
     # intialize providers
     providers = []
     providers.append(DShieldDataProvider())
-    #providers.append(ShadowServerDataProvider())
+    providers.append(ShadowServerDataProvider())
     ptankkey = account.ptankkey
     if len(ptankkey) == 0:
         ptankkey = None

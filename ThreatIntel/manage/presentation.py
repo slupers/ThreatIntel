@@ -33,9 +33,10 @@ class AttributeList(list):
 class EntityList(list):
     def __init__(self, column_tags):
         super(EntityList, self).__init__()
+        assert isinstance(column_tags, tuple)
         assert len(column_tags) > 0
         assert all((isinstance(e, unicode) for e in column_tags))
-        self._ctags = tuple(column_tags)
+        self._ctags = column_tags
     
     def append(self, x):
         assert len(x) == len(self._ctags)
