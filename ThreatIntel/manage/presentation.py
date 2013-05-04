@@ -11,7 +11,7 @@ from django.utils.html import escape
 
 class AttributeList(list):
     def __init__(self):
-        super(AttributeSet, self).__init__()
+        super(AttributeList, self).__init__()
     
     def append(self, x):
         assert len(x) == 2
@@ -102,6 +102,5 @@ def present(value):
 __all__ = [
     b"AttributeList",
     b"EntityList",
-    b"Presentable",
     b"present"
 ]

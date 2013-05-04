@@ -18,23 +18,15 @@
 	</header>
 
 	<main>
-	{% for api in api_info %}
-    <div class="result disp{{ api|key:"disposition" }}">
-            <h2>{{ api|key:"name" }}</h2>
-
-            <table>
-            {% with api|key:"facets" as facets %}
-            {% for key, value in facets.items %}
-                <tr>
-                    <td>{{ key }}</td>
-                    <td>{{ value }}</td>
-                </tr>
-            {% endfor %}
-            {% endwith %}
-            </table>
-		</div>
-    {% empty %}
-        <span class="none">No Results</span>
+	{% for entry in data %}
+	{% with provider=entry.0 iset=entry.1 %}
+	<div class="result disp{{ iset.disposition }}">
+		<h2>{{ provider.name }}</h2>
+		{{ iset.info.as_table|safe }}
+    </div>
+    {% endwith %}
+	{% empty %}
+	<span class="none">No Results</span>
 	{% endfor %}
 	</main>
 </body>

@@ -20,13 +20,13 @@ def query(request):
         form = QueryForm(request.POST)
         if form.is_valid():
             query = request.POST.get('query')
-            api_info = handle_query(request.user, query)
+            data = handle_query(request.user, query)
         else:
             state = 'Invalid form. Try again.'
 
     form = QueryForm()
     # pass in the dictionary of data for each API
-    return render_to_response('query.html', {'form': form, 'state': state, 'api_info': api_info}, RequestContext(request))
+    return render_to_response('query.html', {'form': form, 'state': state, 'data': data}, RequestContext(request))
 
 
 def handle_query(user, query):
@@ -38,37 +38,22 @@ def handle_query(user, query):
 
     # intialize providers
     providers = []
-    providers.append(DShieldDataProvider())
-    providers.append(ShadowServerDataProvider())
+    #providers.append(DShieldDataProvider())
+    #providers.append(ShadowServerDataProvider())
     ptankkey = account.ptankkey
     if len(ptankkey) == 0:
         ptankkey = None
     providers.append(PhishTankDataProvider(apikey=ptankkey))
     vtotkey = account.vtotkey
-    if len(vtotkey) != 0:
-        providers.append(VirusTotalDataProvider(apikey=vtotkey))
+    #if len(vtotkey) != 0:
+    #    providers.append(VirusTotalDataProvider(apikey=vtotkey))
     titancert = account.titancert
     titankey = account.titankey
-    if len(titancert) != 0 and len(titankey) != 0:
-        providers.append(TitanDataProvider(titancert, titankey))
+    #if len(titancert) != 0 and len(titankey) != 0:
+    #    providers.append(TitanDataProvider(titancert, titankey))
 
     # get data for query
-    data = DataProvider.queryn(query, providers)
-
-    # parse data from query
-    for d in data:
-        d_dic = {}
-        d_dic['name'] = d[0].name
-        d_dic['disposition'] = d[1].disposition
-        d_dic['facets'] = {}
-        for facet in d[1].facets:
-            d_dic['facets'][facet[0]] = facet[1]
-
-        api_info.append(d_dic)
-    
-    return api_info
-    #'titankey': account.titankey, 'icskey': account.icskey, 'dshieldkey': account.dshieldkey, 'cifkey': account.cifkey, 'vtotkey': account.vtotkey, 'ptankkey': account.ptankkey, 'sserverkey': account.sserverkey
-
+    return DataProvider.queryn(query, providers)
 
 # the decorator prevents access and redirects users who have not logged in
 @login_required(redirect_field_name='/login')

@@ -4,23 +4,27 @@ gevent.monkey.patch_socket()
 import isodate
 import requests
 from .base import *
+from manage.presentation import *
 
-class PhishTankDataProvider(DataProvider):
-    _urlbase = "http://checkurl.phishtank.com/checkurl/"
+class PhishTankClient(object):
+    _endpoint = "http://checkurl.phishtank.com/checkurl/"
 
     def __init__(self, apikey=None):
         self._apikey = apikey
 
-    def _dolookup(self, url):
-        # Perform a query against PhishTank
-        args = {}
-        args["url"] = url
-        args["format"] = "json"
+    def query_url(self, url):
+        args = {"url": url, "format": "json"}
         if self._apikey != None:
             args["app_key"] = self._apikey
-        r = requests.post(self._urlbase, args)
+        r = requests.post(self._endpoint, args)
+        r.raise_for_status()
         jdata = r.json()
+        print(jdata)
         return jdata["results"]
+
+class PhishTankDataProvider(DataProvider):
+    def __init__(self, apikey=None):
+        self._client = PhishTankClient(apikey)
 
     @property
     def name(self):
@@ -32,18 +36,22 @@ class PhishTankDataProvider(DataProvider):
             return None
         
         # Produce an output information set
-        jres = self._dolookup(target)
+        jres = self._client.query_url(target)
         if jres["in_database"] != True:
             return None
-        info = {}
+        info = AttributeList()
         disp = DISP_NEGATIVE
         if jres["verified"] == "n":
             disp = DISP_INDETERMINATE
         else:
             dval = isodate.parse_datetime(jres["verified_at"])
-            info["last_event_ts"] = dval
+            info.append(("last_event_ts", dval))
             if jres["valid"] != "n":
                 disp = DISP_POSITIVE
-        info["report_id"] = int(jres["phish_id"])
-        info["report_url"] = jres["phish_detail_page"]
-        return InformationSet(disp, **info)
+        info.append(("report_id", int(jres["phish_id"])))
+        info.append(("report_url", jres["phish_detail_page"]))
+        return InformationSet(disp, info)
+
+__all__ = [
+    b"PhishTankDataProvider"
+]

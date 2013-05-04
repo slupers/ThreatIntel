@@ -10,6 +10,7 @@ import socket
 from socket import AF_INET, AF_INET6
 import string
 import urllib
+from manage.presentation import *
 
 QUERY_IPV4 = 1
 QUERY_IPV6 = 2
@@ -41,7 +42,9 @@ class DataProvider(object):
             msg = e.message
         except Exception as e:
             msg = "An internal error occurred"
-        return InformationSet(DISP_FAILURE, message=msg)
+        info = AttributeList()
+        info.append(("message", msg))
+        return InformationSet(DISP_FAILURE, info)
     
     @staticmethod
     def queryn(target, providers):
@@ -55,7 +58,9 @@ class DataProvider(object):
                 msg = e.message
             except Exception as e:
                 msg = "An internal error occurred"
-            return (p, InformationSet(DISP_FAILURE, message=msg))
+            info = AttributeList()
+            info.append(("message", msg))
+            return (p, InformationSet(DISP_FAILURE, info))
         g = gevent.pool.Group()
         l = g.imap_unordered(query1, providers)
         for p, iset in l:
@@ -147,10 +152,11 @@ class DataProvider(object):
         return unicode(uri)
     
 class InformationSet(object):
-    def __init__(self, disposition, **facets):
+    def __init__(self, disposition, info):
         assert disposition in xrange(1, 6)
-        self.disposition = disposition
-        self.facets = facets.items()
+        assert isinstance(info, AttributeList)
+        self.disposition = int(disposition)
+        self.info = info
 
 class QueryError(RuntimeError):
     pass
