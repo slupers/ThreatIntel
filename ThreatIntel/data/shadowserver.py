@@ -4,8 +4,8 @@ gevent.monkey.patch_socket()
 import binascii
 import contextlib
 import csv
-import datetime
-import io
+from datetime import datetime
+from io import BytesIO
 import json
 import re
 import requests
@@ -19,16 +19,15 @@ class ShadowServerDataProvider(DataProvider):
     _wregex = re.compile("^! Whitelisted: (.*?), (.*), (.*)$")
     
     @classmethod
-    def _avlookup(cls, target, qtype):
+    def _avlookup(cls, target):
         # Retrieve malware information by MD5/SHA1 hash
         args = {"query": target}
         r = requests.get(cls._urlbase, params=args)
-        output = unicode(r.text)
+        r.raise_for_status()
+        output = r.text
         if output[0] == "!":
             if output.startswith("! Whitelisted:"):
-                info = cls._processresw(output)
-                if info != None:
-                    return InformationSet(DISP_NEGATIVE, **info)
+                return cls._parsewhitelist(output)
             elif output.startswith("! Sorry"):
                 raise QueryError(b"Query failed")
             elif not output.startswith("! No match found"):
@@ -37,8 +36,56 @@ class ShadowServerDataProvider(DataProvider):
         csvend = output.index("\n")
         csvdata = output[0:csvend]
         jsondata = output[csvend + 1:]
-        info = cls._processres(csvdata, jsondata)
-        return InformationSet(DISP_POSITIVE, **info)
+        return cls._parseav(csvdata, jsondata)
+    
+    @staticmethod
+    def _parseav(csvdata, jsondata):
+        # Produce an AttributeList from positive malware query results
+        info = AttributeList()
+        with BytesIO(csvdata.encode("utf-8")) as bio:
+            cr = csv.reader(bio)
+            row = [f.decode("utf-8") for f in cr.next()]
+            if len(row[2]) > 0:
+                dtv = datetime.strptime(row[2], "%Y-%m-%d %H:%M:%S")
+                info.append(("first_event_ts", dtv))
+            if len(row[3]) > 0:
+                dtv = datetime.strptime(row[3], "%Y-%m-%d %H:%M:%S")
+                info.append(("last_event_ts", dtv))
+            if len(row[0]) > 0:
+                info.append(("sample_md5", binascii.unhexlify(row[0])))
+            if len(row[1]) > 0:
+                info.append(("sample_sha1", binascii.unhexlify(row[1])))
+            if len(row[5]) > 0:
+                info.append(("sample_ssdeep", row[5]))
+            if len(row[4]) > 0:
+                info.append(("file_type", row[4]))
+        rlocs = EntityList(("av_engine", "av_record_locator"))
+        for t in json.loads(jsondata).iteritems():
+            rlocs.append(t)
+        info.append(("av_record_locators", rlocs))
+        return InformationSet(DISP_POSITIVE, info)
+
+    @classmethod
+    def _parsewhitelist(cls, wdata):
+        # Produce an AttributeList from whitelisted malware query results
+        m = cls._wregex.match(wdata)
+        if m == None:
+            return None
+        info = AttributeList()
+        package_vendor = m.group(1)
+        if len(package_vendor) != 0 and package_vendor != "null":
+            info.append(("package_vendor", package_vendor))
+        package_name = m.group(2)
+        if len(package_name) != 0 and package_name != "null":
+            info.append(("package_name", package_name))
+        file_name = m.group(3)
+        if len(file_name) != 0 and file_name != "null":
+            info.append(("file_name", file_name))
+            
+        # ShadowServer is bugged and returns bogus results for non-matches
+        if len(info) == 0:
+            return None
+        return InformationSet(DISP_NEGATIVE, info)
     
     @classmethod
     def _peerlookup(cls, target):
@@ -66,52 +113,6 @@ class ShadowServerDataProvider(DataProvider):
         info.append(("isp", cmps[6]))
         return InformationSet(DISP_INFORMATIONAL, info)
     
-    @staticmethod
-    def _processres(csvdata, jsondata):
-        # Produce a dictionary from positive malware query results
-        info = {}
-        with io.BytesIO(csvdata.encode("utf-8")) as bio:
-            cr = csv.reader(bio)
-            row = [unicode(f, "utf-8") for f in cr.next()]
-            if len(row[0]) > 0:
-                info["sample_md5"] = binascii.unhexlify(row[0])
-            if len(row[1]) > 0:
-                info["sample_sha1"] = binascii.unhexlify(row[1])
-            if len(row[2]) > 0:
-                dval = datetime.datetime.strptime(row[2], "%Y-%m-%d %H:%M:%S")
-                info["first_event_ts"] = dval
-            if len(row[3]) > 0:
-                dval = datetime.datetime.strptime(row[3], "%Y-%m-%d %H:%M:%S")
-                info["last_event_ts"] = dval
-            if len(row[4]) > 0:
-                info["file_type"] = row[4]
-            if len(row[5]) > 0:
-                info["sample_ssdeep"] = row[5]
-        info["av_record_locators"] = json.loads(jsondata)
-        return info
-
-    @classmethod
-    def _processresw(cls, wdata):
-        # Produce a dictionary from whitelisted malware query results
-        m = cls._wregex.match(wdata)
-        if m == None:
-            return None
-        info = {}
-        package_vendor = m.group(1)
-        if len(package_vendor) != 0 and package_vendor != "null":
-            info["package_vendor"] = package_vendor
-        package_name = m.group(2)
-        if len(package_name) != 0 and package_name != "null":
-            info["package_name"] = package_name
-        file_name = m.group(3)
-        if len(file_name) != 0 and file_name != "null":
-            info["file_name"] = file_name
-            
-        # ShadowServer is bugged and returns bogus results for non-matches
-        if len(info) == 0:
-            return None
-        return info
-
     @property
     def name(self):
         return "shadowserver"
@@ -120,5 +121,5 @@ class ShadowServerDataProvider(DataProvider):
         if qtype == QUERY_IPV4:
             return self._peerlookup(target)
         elif qtype in (QUERY_MD5, QUERY_SHA1):
-            return self._avlookup(target, qtype)
+            return self._avlookup(target)
         return None

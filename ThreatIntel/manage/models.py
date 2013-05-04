@@ -8,7 +8,7 @@ class UserConfiguration(models.Model):
     titankey = models.TextField(blank=True)
     cifkey = models.CharField(max_length=36, blank=True)
     vtotkey = models.CharField(max_length=64, blank=True)
-    ptankkey = models.CharField(max_length=512, blank=True) # FIXME
+    ptankkey = models.CharField(max_length=64, blank=True)
 
 class KeysForm(ModelForm):
     class Meta:
