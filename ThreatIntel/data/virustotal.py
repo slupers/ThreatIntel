@@ -158,6 +158,8 @@ class VirusTotalDataProvider(DataProvider):
             av_definition_ver = entry.get("update")
             if scan_result == "clean site":
                 scan_result = None
+            if not scan_positive and scan_result == None:
+                continue
             if av_definition_ver != None:
                 av_definition_ver = datetime.strptime(av_definition_ver, "%Y%m%d").date()
             info.append((av_engine, scan_positive, av_engine_ver, scan_result, av_definition_ver))
