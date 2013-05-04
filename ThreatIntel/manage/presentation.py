@@ -73,7 +73,7 @@ def present_generic(value):
     return html.escape(formats.localize(value))
 
 def present_unicode(value):
-    return html.urlize(value, autoescape=True, nofollow=True)
+    return html.urlize(value, autoescape=True, nofollow=True, trim_url_limit=50)
 
 presenters = {
     AttributeList: AttributeList.as_table,
@@ -85,7 +85,8 @@ presenters = {
     float: present_generic,
     int: present_generic,
     long: present_generic,
-    unicode: present_unicode
+    unicode: present_unicode,
+    type(None): lambda x: ""
 }
 
 class Presentable(object):

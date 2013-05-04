@@ -45,8 +45,8 @@ def handle_query(user, query):
         ptankkey = None
     providers.append(PhishTankDataProvider(apikey=ptankkey))
     vtotkey = account.vtotkey
-    #if len(vtotkey) != 0:
-    #    providers.append(VirusTotalDataProvider(apikey=vtotkey))
+    if len(vtotkey) != 0:
+        providers.append(VirusTotalDataProvider(apikey=vtotkey))
     titancert = account.titancert
     titankey = account.titankey
     #if len(titancert) != 0 and len(titankey) != 0:
