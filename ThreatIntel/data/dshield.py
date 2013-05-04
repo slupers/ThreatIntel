@@ -10,51 +10,57 @@ from manage.presentation import *
 
 class DShieldDataProvider(DataProvider):
     _endpoint = "http://www.dshield.org/api/ip/{0}"
-
+    
     @classmethod
-    def _mapelement(cls, e, info):
-        ev = unicode(e.text, "utf-8").strip()
-        if e.tag == "count":
-            info["n_attack_packets"] = int(ev)
-        elif e.tag == "attacks":
-            info["n_attack_targets"] = int(ev)
-        elif e.tag == "maxdate":
-            if e.text == "0":
+    def _parse(cls, data):
+        # Produce an AttributeList from the data
+        info = AttributeList()
+        attacks = None
+        ev = data.get("mindate")
+        if ev != None:
+            if ev == "0":
                 return None
             dv = datetime.datetime.strptime(ev, "%Y-%m-%d").date()
-            info["last_event_ts"] = dv
-        elif e.tag == "mindate":
-            if e.text == "0":
+            info.append(("first_event_ts", dv))
+        ev = data.get("maxdate")
+        if ev != None:
+            if ev == "0":
                 return None
             dv = datetime.datetime.strptime(ev, "%Y-%m-%d").date()
-            info["first_event_ts"] = dv
-        elif e.tag == "updated":
-            if e.text == "0":
+            info.append(("last_event_ts", dv))
+        ev = data.get("updated")
+        if ev != None:
+            if ev == "0":
                 return None
             dtv = datetime.datetime.strptime(ev, "%Y-%m-%d %H:%M:%S")
-            info["update_ts"] = dtv
-        elif e.tag == "country":
-            info["country"] = ev
-        elif e.tag == "as":
-            info["as_number"] = int(ev)
-        elif e.tag == "asname":
-            info["as_name"] = ev
-        elif e.tag == "network":
-            info["network_prefix"] = ev
-        elif e.tag == "comment":
-            info["comment"] = ev
-        elif e.tag == "abusecontact":
-            info["abuse_contact"] = ev
-
-    @classmethod
-    def _parse(cls, tree):
-        info = {}
-        for e in tree.iter():
-            try:
-                cls._mapelement(e, info)
-            except:
-                pass
-        attacks = info.get("n_attack_targets")
+            info.append(("update_ts", dtv))
+        ev = data.get("count")
+        if ev != None:
+            info.append(("n_attack_packets", int(ev)))
+        ev = data.get("attacks")
+        if ev != None:
+            attacks = int(ev)
+            info.append(("n_attack_targets", attacks))
+        ev = data.get("country")
+        if ev != None:
+            info.append(("country", ev))
+        ev = data.get("as")
+        if ev != None:
+            info.append(("as_number", int(ev)))
+        ev = data.get("asname")
+        if ev != None:
+            info.append(("as_name", ev))
+        ev = data.get("network")
+        if ev != None:
+            info.append(("network_prefix", ev))
+        ev = data.get("comment")
+        if ev != None:
+            info.append(("comment", ev))
+        ev = data.get("abusecontact")
+        if ev != None:
+            info.append(("abuse_contact", ev))
+        
+        # Determine a disposition and return the InformationSet
         if attacks == None:
             disp = DISP_INFORMATIONAL
         elif attacks < 10:
@@ -63,25 +69,27 @@ class DShieldDataProvider(DataProvider):
             disp = DISP_POSITIVE
         else:
             disp = DISP_INDETERMINATE
-        info2 = AttributeList()
-        for k, v in info.iteritems():
-            info2.append((k, v))
-        return InformationSet(disp, info2)
-
+        return InformationSet(disp, info)
+    
     @property
     def name(self):
         return "dshield"
-        
-    @classmethod
-    def _query_ip(cls, ip):
-        url = cls._endpoint.format(ip)
-        r = requests.get(url)
-        xp = xml.etree.cElementTree.XMLParser(encoding="utf-8")
-        xp.feed(r.text.encode("utf-8"))
-        tree = xp.close()
-        return tree
     
     def _query(self, target, qtype):
-        if qtype in (QUERY_IPV4, QUERY_IPV6):
-            return self._parse(self._query_ip(target))
-        return None
+        if qtype not in (QUERY_IPV4, QUERY_IPV6):
+            return None
+        endpoint = self._endpoint.format(target)
+        r = requests.get(endpoint)
+        r.raise_for_status()
+        xp = xml.etree.cElementTree.XMLParser(encoding="utf-8")
+        xp.feed(r.text.encode("utf-8"))
+        root = xp.close()
+        data = {}
+        for e in root:
+            if e.text == None:
+                continue
+            tag = unicode(e.tag, "utf-8")
+            value = unicode(e.text, "utf-8").strip()
+            if len(value) != 0:
+                data[tag] = value
+        return self._parse(data)
