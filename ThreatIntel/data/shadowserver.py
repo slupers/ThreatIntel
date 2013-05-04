@@ -14,7 +14,7 @@ from socket import AF_INET, IPPROTO_TCP, SOCK_STREAM
 from .base import *
 
 class ShadowServerDataProvider(DataProvider):
-    _whoissvr = "64.71.137.251" # HACK: ShadowServer's DNS is borked
+    _whoissvr = "asn.shadowserver.org"
     _urlbase = "http://innocuous.shadowserver.org/api/"
     _wregex = re.compile("^! Whitelisted: (.*?), (.*), (.*)$")
     
