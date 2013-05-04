@@ -3,7 +3,7 @@ from abc import ABCMeta
 from binascii import hexlify
 from datetime import date, datetime
 from django.utils.formats import localize
-from django.utils.html import escape
+import django.utils.html as html
 
 #
 # Presentable structures
@@ -24,7 +24,7 @@ class AttributeList(list):
     def as_table(self):
         val = "<table>"
         for k, v in self:
-            cell1 = escape(k) # TODO: translate me
+            cell1 = html.escape(k) # TODO: translate me
             cell2 = present(v)
             val += "<tr><th>{0}</th><td>{1}</td></tr>".format(cell1, cell2)
         val += "</table>"
@@ -49,7 +49,7 @@ class EntityList(list):
     def as_table(self):
         val = "<table><thead>"
         for v in self._ctags:
-            cell = escape(v) # TODO: translate me
+            cell = html.escape(v) # TODO: translate me
             val += "<th>{0}</th>".format(cell)
         val += "</thead><tbody>"
         for v in self:
@@ -62,45 +62,44 @@ class EntityList(list):
         return val
 
 #
-# Object presentation
+# Generic object presentation
 #
 
-def _present_bytes(value):
+def present_bytes(value):
     return hexlify(value).decode()
 
-def _present_generic(value):
-    return escape(localize(value))
+def present_generic(value):
+    return html.escape(localize(value))
 
-def _present_unicode(value):
-    return escape(value)
+def present_unicode(value):
+    return html.urlize(value, autoescape=True, nofollow=True)
 
-_presenters = {
+presenters = {
     AttributeList: AttributeList.as_table,
-    bool: _present_generic,
-    bytes: _present_bytes,
-    date: _present_generic,
-    datetime: _present_generic,
+    bool: present_generic,
+    bytes: present_bytes,
+    date: present_generic,
+    datetime: present_generic,
     EntityList: EntityList.as_table,
-    float: _present_generic,
-    int: _present_generic,
-    long: _present_generic,
-    unicode: _present_unicode
+    float: present_generic,
+    int: present_generic,
+    long: present_generic,
+    unicode: present_unicode
 }
 
 class Presentable(object):
     __metaclass__ = ABCMeta
 
-for t in _presenters.keys():
+for t in presenters.keys():
     Presentable.register(t)
 
 def present(value):
-    for k, v in _presenters.iteritems():
+    for k, v in presenters.iteritems():
         if isinstance(value, k):
             return v(value)
     raise ValueError(b"Value is not presentable")
 
 __all__ = [
     b"AttributeList",
-    b"EntityList",
-    b"present"
+    b"EntityList"
 ]
