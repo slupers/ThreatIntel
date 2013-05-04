@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import gevent.monkey
 gevent.monkey.patch_socket()
-import datetime
+from datetime import datetime
 import isodate
 import requests
-import xml.etree.cElementTree
+from xml.etree.cElementTree import XMLParser
 from .base import *
 from manage.presentation import *
 
@@ -20,19 +20,19 @@ class DShieldDataProvider(DataProvider):
         if ev != None:
             if ev == "0":
                 return None
-            dv = datetime.datetime.strptime(ev, "%Y-%m-%d").date()
+            dv = datetime.strptime(ev, "%Y-%m-%d").date()
             info.append(("first_event_ts", dv))
         ev = data.get("maxdate")
         if ev != None:
             if ev == "0":
                 return None
-            dv = datetime.datetime.strptime(ev, "%Y-%m-%d").date()
+            dv = datetime.strptime(ev, "%Y-%m-%d").date()
             info.append(("last_event_ts", dv))
         ev = data.get("updated")
         if ev != None:
             if ev == "0":
                 return None
-            dtv = datetime.datetime.strptime(ev, "%Y-%m-%d %H:%M:%S")
+            dtv = datetime.strptime(ev, "%Y-%m-%d %H:%M:%S")
             info.append(("update_ts", dtv))
         ev = data.get("count")
         if ev != None:
@@ -81,15 +81,15 @@ class DShieldDataProvider(DataProvider):
         endpoint = self._endpoint.format(target)
         r = requests.get(endpoint)
         r.raise_for_status()
-        xp = xml.etree.cElementTree.XMLParser(encoding="utf-8")
+        xp = XMLParser(encoding="utf-8")
         xp.feed(r.text.encode("utf-8"))
         root = xp.close()
         data = {}
         for e in root:
             if e.text == None:
                 continue
-            tag = unicode(e.tag, "utf-8")
-            value = unicode(e.text, "utf-8").strip()
+            tag = e.tag.decode("utf-8")
+            value = e.text.decode("utf-8").strip()
             if len(value) != 0:
                 data[tag] = value
         return self._parse(data)

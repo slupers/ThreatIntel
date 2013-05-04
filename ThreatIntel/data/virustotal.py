@@ -66,8 +66,7 @@ class VirusTotalDataProvider(DataProvider):
     _keyregex = re.compile(r"^[A-F0-9]{64}$", re.I)
 
     def __init__(self, apikey):
-        if not isinstance(apikey, basestring):
-            raise ValueError(b"Invalid VirusTotal API key")
+        assert isinstance(apikey, basestring)
         if self._keyregex.match(apikey) == None:
             raise ValueError(b"Invalid VirusTotal API key")
         self._client = VirusTotalClient(apikey)
