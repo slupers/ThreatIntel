@@ -38,7 +38,7 @@ def handle_query(user, query):
 
     # intialize providers
     providers = []
-    #providers.append(DShieldDataProvider())
+    providers.append(DShieldDataProvider())
     #providers.append(ShadowServerDataProvider())
     ptankkey = account.ptankkey
     if len(ptankkey) == 0:

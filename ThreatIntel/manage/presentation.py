@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
-from abc import ABCMeta
-from binascii import hexlify
+import abc
+import binascii
 from datetime import date, datetime
-from django.utils.formats import localize
+import django.utils.formats as formats
 import django.utils.html as html
 
 #
@@ -66,10 +66,10 @@ class EntityList(list):
 #
 
 def present_bytes(value):
-    return hexlify(value).decode()
+    return binascii.hexlify(value).decode()
 
 def present_generic(value):
-    return html.escape(localize(value))
+    return html.escape(formats.localize(value))
 
 def present_unicode(value):
     return html.urlize(value, autoescape=True, nofollow=True)
@@ -88,7 +88,7 @@ presenters = {
 }
 
 class Presentable(object):
-    __metaclass__ = ABCMeta
+    __metaclass__ = abc.ABCMeta
 
 for t in presenters.keys():
     Presentable.register(t)

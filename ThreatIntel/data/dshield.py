@@ -6,6 +6,7 @@ import isodate
 import requests
 import xml.etree.cElementTree
 from .base import *
+from manage.presentation import *
 
 class DShieldDataProvider(DataProvider):
     _endpoint = "http://www.dshield.org/api/ip/{0}"
@@ -62,7 +63,10 @@ class DShieldDataProvider(DataProvider):
             disp = DISP_POSITIVE
         else:
             disp = DISP_INDETERMINATE
-        return InformationSet(disp, **info)
+        info2 = AttributeList()
+        for k, v in info.iteritems():
+            info2.append((k, v))
+        return InformationSet(disp, info2)
 
     @property
     def name(self):
