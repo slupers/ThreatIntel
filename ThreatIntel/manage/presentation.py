@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
-import abc
-import binascii
-import datetime
-import django.utils.formats
-import django.utils.html
+from abc import ABCMeta
+from binascii import hexlify
+from datetime import date, datetime
+from django.utils.formats import localize
+from django.utils.html import escape
 
 #
 # Presentable structures
@@ -24,9 +24,9 @@ class AttributeList(list):
     def as_table(self):
         val = "<table>"
         for k, v in self:
-            c1 = django.utils.html.escape(k) # TODO: translate me
-            c2 = django.utils.html.escape(v)
-            val += "<tr><th>{0}</th><td>{1}</td></tr>".format(c1, c2)
+            cell1 = escape(k) # TODO: translate me
+            cell2 = present(v)
+            val += "<tr><th>{0}</th><td>{1}</td></tr>".format(cell1, cell2)
         val += "</table>"
         return val
 
@@ -49,14 +49,14 @@ class EntityList(list):
     def as_table(self):
         val = "<table><thead>"
         for v in self._ctags:
-            c = django.utils.html.escape(v) # TODO: translate me
-            val += "<th>{0}</th>".format(c)
+            cell = escape(v) # TODO: translate me
+            val += "<th>{0}</th>".format(cell)
         val += "</thead><tbody>"
         for v in self:
             val += "<tr>"
             for e in v:
-                c = django.utils.html.escape(e)
-                val += "<td>{0}</td>".format(c)
+                cell = present(e)
+                val += "<td>{0}</td>".format(cell)
             val += "</tr>"
         val += "</tbody></table>"
         return val
@@ -66,20 +66,20 @@ class EntityList(list):
 #
 
 def _present_bytes(value):
-    return binascii.hexlify(value).decode()
+    return hexlify(value).decode()
 
 def _present_generic(value):
-    return django.utils.html.escape(django.utils.formats.localize(value))
+    return escape(localize(value))
 
 def _present_unicode(value):
-    return django.utils.html.escape(value)
+    return escape(value)
 
 _presenters = {
     AttributeList: AttributeList.as_table,
     bool: _present_generic,
     bytes: _present_bytes,
-    datetime.date: _present_generic,
-    datetime.datetime: _present_generic,
+    date: _present_generic,
+    datetime: _present_generic,
     EntityList: EntityList.as_table,
     float: _present_generic,
     int: _present_generic,
@@ -88,7 +88,20 @@ _presenters = {
 }
 
 class Presentable(object):
-    __metaclass__ = abc.ABCMeta
+    __metaclass__ = ABCMeta
 
 for t in _presenters.keys():
     Presentable.register(t)
+
+def present(value):
+    for k, v in _presenters.iteritems():
+        if isinstance(value, k):
+            return v(value)
+    raise ValueError(b"Value is not presentable")
+
+__all__ = [
+    b"AttributeList",
+    b"EntityList",
+    b"Presentable",
+    b"present"
+]
