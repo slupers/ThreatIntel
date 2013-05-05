@@ -154,3 +154,6 @@ msgstr "Payload analysis"
 
 msgid "analysis_av"
 msgstr "Antivirus scan"
+
+msgid "error"
+msgstr "Error message"

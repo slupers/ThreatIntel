@@ -179,7 +179,9 @@ class VirusTotalDataProvider(DataProvider):
         positives = info.find("n_scans_positive")
         if info2 != None:
             positives = max(positives, info2.find("n_scans_positive"))
-        if positives == None:
+        if len(info.find("detections", [])) > 0:
+            disp = DISP_POSITIVE
+        elif positives == None:
             disp = DISP_INFORMATIONAL
         elif positives > 2:
             disp = DISP_POSITIVE

@@ -44,6 +44,9 @@ div.result {
     margin: 0 0 10px 0;
     padding: 0 0 5px 8px;
 }
+div.result a {
+    color: #aaccff;
+}
 div.result div.content {
     overflow: auto;
 }
@@ -71,20 +74,20 @@ div.result table>thead>tr>th {
     font-weight: normal;
     font-style: italic;
 }
-div.result.disp1 {
+div.result.disp1 { /* positive */
+    border-left-color: #df0101;
+}
+div.result.disp2 { /* indeterminate */
+    border-left-color: #fffb00;
+}
+div.result.disp3 { /* negative */
     border-left-color: #01df01;
 }
-div.result.disp2 {
-    border-left-color: #a5df00;
-}
-div.result.disp3 {
-    border-left-color: #d7df01;
-}
-div.result.disp4 {
+div.result.disp4 { /* failure */
     border-left-color: #df7401;
 }
-div.result.disp5 {
-    border-left-color: #df0101;
+div.result.disp5 { /* informational */
+    border-left-color: #2a86ad;
 }
 
 .none {

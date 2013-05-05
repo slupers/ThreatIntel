@@ -43,7 +43,7 @@ class DataProvider(object):
         except Exception as e:
             msg = "An internal error occurred"
         info = AttributeList()
-        info.append(("message", msg))
+        info.append(("error", msg))
         return InformationSet(DISP_FAILURE, info)
     
     @staticmethod
@@ -56,12 +56,11 @@ class DataProvider(object):
                 return (p, p._query(ntarget, qtype))
             #except QueryError as e:
             except Exception as e:
-                raise
                 msg = unicode(e.message)
             #except Exception as e:
             #    msg = "An internal error occurred"
             info = AttributeList()
-            info.append(("message", msg))
+            info.append(("error", msg))
             return (p, InformationSet(DISP_FAILURE, info))
         g = gevent.pool.Group()
         l = g.imap_unordered(query1, providers)
