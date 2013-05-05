@@ -34,6 +34,7 @@ class VirusTotalClient(object):
         
         # Decode and check for errors
         res = r.json()
+        print(res)
         rcode = res.get("response_code")
         if rcode == None or rcode < 0:
             msg = res.get("verbose_msg")
@@ -72,37 +73,6 @@ class VirusTotalDataProvider(DataProvider):
     @property
     def name(self):
         return "virustotal"
-
-    def _parse(self, data):
-        # Process each unit of data returned
-        info = AttributeList()
-        for key, newkey, fn in self._handlers:
-            value = data.get(key)
-            if value != None:
-                newvalue = fn(value)
-                if newvalue != None:
-                    info.append((newkey, newvalue))
-        fsid = data.get("filescan_id")
-        if fsid != None:
-            data2 = self._client.query_scan(fsid)
-            for key, newkey, fn in self._fhandlers:
-                value = data2.get(key)
-                if value != None:
-                    newvalue = fn(value)
-                    if newvalue != None:
-                        info.append((newkey, newvalue))
-        
-        # Decide on a disposition
-        positives = int(data["positives"]) if "positives" in data else None
-        if positives == None:
-            disp = DISP_INFORMATIONAL
-        elif positives > 2:
-            disp = DISP_POSITIVE
-        elif positives == 0:
-            disp = DISP_NEGATIVE
-        else:
-            disp = DISP_INDETERMINATE
-        return InformationSet(disp, info)
     
     def _parse_dcs(dcs):
         # Construct an EntityList from the detected communicating samples
@@ -185,16 +155,74 @@ class VirusTotalDataProvider(DataProvider):
             info.append((occurrence_ts, hit_ratio, url))
         return info
     
+    def _process(self, data):
+        # Process each unit of data returned
+        if data.get("response_code") != 1:
+            return None
+        info = AttributeList()
+        info2 = None
+        for key, newkey, fn in self._handlers:
+            value = data.get(key)
+            if value != None:
+                newvalue = fn(value)
+                if newvalue != None:
+                    info.append((newkey, newvalue))
+        fsid = data.get("filescan_id")
+        if fsid != None:
+            data2 = self._client.query_scan(fsid)
+            if data2 != None:
+                info2 = self._process_file(data2).info
+                info.append(("file_info", info2))
+        
+        # Decide on a disposition
+        positives = info.find("n_scans_positive")
+        if info2 != None:
+            positives = max(positives, info2.find("n_scans_positive"))
+        if positives == None:
+            disp = DISP_INFORMATIONAL
+        elif positives > 2:
+            disp = DISP_POSITIVE
+        elif positives == 0:
+            disp = DISP_NEGATIVE
+        else:
+            disp = DISP_INDETERMINATE
+        return InformationSet(disp, info)
+    
+    def _process_file(self, data):
+        # Process each unit of data returned
+        if data.get("response_code") != 1:
+            return None
+        info = AttributeList()
+        for key, newkey, fn in self._fhandlers:
+            value = data.get(key)
+            if value != None:
+                newvalue = fn(value)
+                if newvalue != None:
+                    info.append((newkey, newvalue))
+        
+        # Decide on a disposition
+        positives = info.find("n_scans_positive")
+        if positives == None:
+            disp = DISP_INFORMATIONAL
+        elif positives > 2:
+            disp = DISP_POSITIVE
+        elif positives == 0:
+            disp = DISP_NEGATIVE
+        else:
+            disp = DISP_INDETERMINATE
+        return InformationSet(disp, info)
+    
     def _query(self, target, qtype):
         if qtype == QUERY_URL:
-            res = self._client.query_url(target, True)
+            return self._process(self._client.query_url(target, False))
         elif qtype == QUERY_IPV4:
-            res = self._client.query_ipv4(target)
+            return self._process(self._client.query_ipv4(target))
         elif qtype == QUERY_DOMAIN:
-            res = self._client.query_fqdn(target)
+            return self._process(self._client.query_fqdn(target))
+        elif qtype in (QUERY_MD5, QUERY_SHA1):
+            return self._process_file(self._client.query_scan(target))
         else:
             return None
-        return self._parse(res)
 
     _keyregex = re.compile(r"^[A-F0-9]{64}$", re.I)
     _handlers = [

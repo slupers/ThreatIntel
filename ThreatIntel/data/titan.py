@@ -48,8 +48,7 @@ class TitanClient(object):
                 sortj = sortj.decode()
             params["sort"] = sortj
         
-        # Perform the request
-        # HACK: This SSL cert load code is a ridiculous hack
+        # Perform the request, using pipes to load the certificate/key
         cpiper, cpipew = os.pipe()
         kpiper = kpipew = None
         try:
@@ -138,12 +137,13 @@ class TitanDataProvider(DataProvider):
         # Dump analysis information into its own entry
         adata = EntityList(("analysis", ))
         for analysis in analyses:
+            atdata = AttributeList()
             for atype in analysis["types"]:
                 fn = cls._aformatters.get(atype)
                 if fn != None:
-                    typedata = fn(analysis[atype])
-                    typedata.insert(0, (("analysis_mode", atype)))
-                    adata.append((typedata, ))
+                    key = "analysis_{0}".format(atype)
+                    atdata.append((key, fn(analysis[atype])))
+            adata.append((atdata, ))
         info.append(("analyses", adata))
         return InformationSet(DISP_INFORMATIONAL, info)
     

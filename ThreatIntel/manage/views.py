@@ -4,6 +4,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext, loader
 import django.utils.html as html
 from django.utils.translation import ugettext
+import itertools
 from manage.models import *
 
 import sys
@@ -18,7 +19,31 @@ def query(request):
     if request.method == 'POST':
         return query_execute(request)
     form = QueryForm()
-    return render_to_response('query.html', {'form': form, 'state': ""}, RequestContext(request))
+    return render_to_response("query.html", {'form': form, 'state': ""}, RequestContext(request))
+
+def query_execute(request):
+    # Retrieve and validate the query form
+    form = QueryForm(request.POST)
+    ctx = RequestContext(request, {"form": form, "state": ""})
+    if not form.is_valid():
+        ctx["state"] = "Unrecognized query input"
+        return render_to_response("query.html", context_instance=ctx)
+    query = form.cleaned_data["query"].strip()
+    
+    # Load the user's API keys
+    try:
+        config = request.user.config
+    except UserConfiguration.DoesNotExist:
+        config = UserConfiguration(user=request.user)
+        config.save()
+    try:
+        providers = construct_providers(config)
+    except ValueError:
+        ctx["state"] = "Invalid API key detected"
+        return render_to_response("query.html", context_instance=ctx)
+    
+    # Produce the actual respons
+    return execute_query(ctx, query, providers)
 
 def construct_providers(config):
     # Construct providers from user's info
@@ -38,30 +63,34 @@ def construct_providers(config):
         providers.append(TitanDataProvider(titancert, titankey))
     return providers
 
-def query_execute(request):
-    form = QueryForm(request.POST)
-    if not form.is_valid():
-        pass # do some error thing
-    query = form.cleaned_data["query"].strip()
-    ctx = RequestContext(request, {"form": form, "state": ""})
-    providers = construct_providers(request.user.config)
-    data = DataProvider.queryn(query, providers)
-    def produce():
+def execute_query(ctx, query, providers):
+    def generator():
+        data = DataProvider.queryn(query, providers)
         tqheader = loader.get_template("result_header.html")
         tqentry = loader.get_template("result_entry.html")
+        tqempty = loader.get_template("result_empty.html")
         tqfooter = loader.get_template("result_footer.html")
         yield tqheader.render(ctx)
         ctx.push()
-        for entry in data:
+        for count in itertools.count():
+            try:
+                entry = data.next()
+            except StopIteration:
+                if count == 0:
+                    ctx["state"] = "No information returned"
+                    yield tqempty.render(ctx)
+                break
+            except Exception as e:
+                if count == 0:
+                    ctx["state"] = unicode(e.message)
+                    yield tqempty.render(ctx)
+                break
             ctx["entry"] = entry
             yield tqentry.render(ctx)
             yield ' ' * 1024
-        else:
-            tqempty = loader.get_template("result_empty.html")
-            yield tqempty.render(ctx)
         ctx.pop()
         yield tqfooter.render(ctx)
-    return StreamingHttpResponse(produce())
+    return StreamingHttpResponse(generator())
 
 # the decorator prevents access and redirects users who have not logged in
 @login_required(redirect_field_name='/login')

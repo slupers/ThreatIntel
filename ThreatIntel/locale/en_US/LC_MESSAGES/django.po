@@ -154,3 +154,6 @@ msgstr "Finding"
 
 msgid "analysis_mode"
 msgstr "Analysis module"
+
+msgid "file_info"
+msgstr "Payload analysis"

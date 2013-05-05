@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
-import abc
+from abc import ABCMeta
 import binascii
+from collections import OrderedDict
 from datetime import date, datetime
 import django.utils.formats as formats
 import django.utils.html as html
@@ -10,26 +11,38 @@ from django.utils.translation import ugettext
 # Presentable structures
 #
 
-class AttributeList(list):
+class AttributeList(object):
     def __init__(self):
-        super(AttributeList, self).__init__()
+        self._od = OrderedDict()
     
     def append(self, x):
         assert len(x) == 2
         tag = x[0]
         value = x[1]
         assert isinstance(tag, unicode)
-        assert isinstance(value, Presentable)
-        super(AttributeList, self).append((tag, value))
+        if tag in self._od:
+            raise ValueError(b"Attributes must have unique tags")
+        if not isinstance(value, Presentable):
+            raise ValueError(b"Unrecognized attribute value type")
+        self._od[tag] = value
     
     def as_table(self):
         val = "<table>"
-        for k, v in self:
+        for k, v in self._od.iteritems():
             cell1 = html.escape(ugettext(k))
             cell2 = present(v)
             val += "<tr><th>{0}</th><td>{1}</td></tr>".format(cell1, cell2)
         val += "</table>"
         return val
+    
+    def find(self, tag, default=None):
+        return self._od.get(tag, default)
+    
+    def __iter__(self):
+        return self._od.iteritems()
+    
+    def __len__(self):
+        return len(self._od)
 
 class EntityList(list):
     def __init__(self, column_tags):
@@ -94,7 +107,7 @@ presenters = {
 }
 
 class Presentable(object):
-    __metaclass__ = abc.ABCMeta
+    __metaclass__ = ABCMeta
 
 for t in presenters.keys():
     Presentable.register(t)

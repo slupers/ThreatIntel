@@ -39,7 +39,7 @@ class DataProvider(object):
         try:
             return self._query(ntarget, qtype)
         except QueryError as e:
-            msg = e.message
+            msg = unicode(e.message)
         except Exception as e:
             msg = "An internal error occurred"
         info = AttributeList()
@@ -54,11 +54,11 @@ class DataProvider(object):
         def query1(p):
             try:
                 return (p, p._query(ntarget, qtype))
-            except QueryError as e:
-                msg = e.message
+            #except QueryError as e:
             except Exception as e:
-                msg = "An internal error occurred"
-                raise
+                msg = unicode(e.message)
+            #except Exception as e:
+            #    msg = "An internal error occurred"
             info = AttributeList()
             info.append(("message", msg))
             return (p, InformationSet(DISP_FAILURE, info))
