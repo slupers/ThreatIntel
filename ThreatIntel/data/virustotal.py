@@ -20,20 +20,15 @@ class VirusTotalClient(object):
         endpoint = self._endpoint.format(rtype)
         params["apikey"] = self._apikey
         while True:
-            try:
-                if method == "GET":
-                    r = requests.get(endpoint, params=params)
-                elif method == "POST":
-                    r = requests.post(endpoint, data=params)
-                else:
-                    assert False
-                r.raise_for_status()
-            except Exception as e:
-                raise QueryError(e.message)
+            if method == "GET":
+                r = requests.get(endpoint, params=params)
+            elif method == "POST":
+                r = requests.post(endpoint, data=params)
+            else:
+                assert False
+            r.raise_for_status()
             if r.status_code == 204:
                 gevent.sleep(60)
-            elif r.status_code != 200:
-                raise QueryError(b"Unexpected HTTP response")
             else:
                 break
         
@@ -64,8 +59,6 @@ class VirusTotalClient(object):
         return self._get_report("url", "POST", resource=resource, scan=scan)
 
 class VirusTotalDataProvider(DataProvider):
-    _keyregex = re.compile(r"^[A-F0-9]{64}$", re.I)
-
     def __init__(self, apikey):
         assert isinstance(apikey, basestring)
         if self._keyregex.match(apikey) == None:
@@ -77,47 +70,18 @@ class VirusTotalDataProvider(DataProvider):
         return "virustotal"
 
     @classmethod
-    def _parse(cls, res):
+    def _parse(cls, data):
         # Process each unit of data returned
         info = AttributeList()
-        positives = None
-        v = res.get("md5")
-        if v != None:
-            info.append(("sample_md5", binascii.unhexlify(v)))
-        v = res.get("sha1")
-        if v != None:
-            info.append(("sample_sha1", binascii.unhexlify(v)))
-        v = res.get("sha256")
-        if v != None:
-            info.append(("sample_sha256", binascii.unhexlify(v)))
-        v = res.get("scan_date")
-        if v != None:
-            dtv = datetime.strptime(v, "%Y-%m-%d %H:%M:%S")
-            info.append(("last_event_ts", dtv))
-        v = res.get("positives")
-        if v != None:
-            positives = int(v)
-            info.append(("n_scans_positive", positives))
-        v = res.get("total")
-        if v != None:
-            info.append(("n_scans", int(v)))
-        v = res.get("scans")
-        if v != None:
-            info.append(("scan_details", cls._parse_scans(v)))
-        v = res.get("permalink")
-        if v != None:
-            info.append(("report_url", v))
-        v = res.get("resolutions")
-        if v != None:
-            info.append(("fqdn_matches", unicode(v)))
-        v = res.get("detected_communicating_samples")
-        if v != None:
-            info.append(("communicating_samples", unicode(v)))
-        v = res.get("detected_urls")
-        if v != None:
-            info.append(("malware_matches", unicode(v)))
+        for key, newkey, fn in cls._handlers:
+            value = data.get(key)
+            if value != None:
+                newvalue = fn(value)
+                if newvalue != None:
+                    info.append((newkey, newvalue))
         
         # Decide on a disposition
+        positives = int(data["positives"]) if "positives" in data else None
         if positives == None:
             disp = DISP_INFORMATIONAL
         elif positives > 2:
@@ -128,8 +92,7 @@ class VirusTotalDataProvider(DataProvider):
             disp = DISP_INDETERMINATE
         return InformationSet(disp, info)
     
-    @classmethod
-    def _parse_dcs(cls, dcs):
+    def _parse_dcs(dcs):
         # Construct an EntityList from the detected communicating samples
         hdrs = ("occurrence_ts", "n_scans_positive", "n_scans", "sample_sha256")
         info = EntityList(hdrs)
@@ -145,8 +108,8 @@ class VirusTotalDataProvider(DataProvider):
             info.append((occurrence_ts, n_scans_positive, n_scans, sample_sha256))
         return info
     
-    @classmethod
-    def _parse_scans(cls, scans):
+    def _parse_scans(scans):
+        # Construct an EntityList from the scan details
         hdrs = ("av_engine", "scan_positive", "av_engine_ver", "scan_result", "av_definition_ver")
         info = EntityList(hdrs)
         scaninfo = scans.items()
@@ -175,6 +138,21 @@ class VirusTotalDataProvider(DataProvider):
         else:
             return None
         return self._parse(res)
+
+    _keyregex = re.compile(r"^[A-F0-9]{64}$", re.I)
+    _handlers = [
+        ("scan_date", "update_ts", lambda v: datetime.strptime(v, "%Y-%m-%d %H:%M:%S")),
+        ("md5", "sample_md5", binascii.unhexlify),
+        ("sha1", "sample_sha1", binascii.unhexlify),
+        ("sha256", "sample_sha256", binascii.unhexlify),
+        ("positives", "n_scans_positive", int),
+        ("total", "n_scans", int),
+        ("scans", "scan_details", _parse_scans),
+        ("permalink", "report_url", lambda x: x),
+        ("resolutions", "fqdn_matches", unicode),
+        ("detected_communicating_samples", "communicating_samples", _parse_dcs),
+        ("detected_urls", "malware_matches", unicode)
+    ]
 
 __all__ = [
     b"VirusTotalDataProvider"

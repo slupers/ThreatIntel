@@ -8,17 +8,17 @@ from xml.etree.cElementTree import XMLParser
 from .base import *
 from manage.presentation import *
 
-def handle_date(value):
-    if value == "0":
-        return None
-    return datetime.strptime(value, "%Y-%m-%d").date()
-
-def handle_datetime(value):
-    if value == "0":
-        return None
-    return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
-
 class DShieldDataProvider(DataProvider):
+    def _handle_date(value):
+        if value == "0":
+            return None
+        return datetime.strptime(value, "%Y-%m-%d").date()
+
+    def _handle_datetime(value):
+        if value == "0":
+            return None
+        return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+    
     @classmethod
     def _parse(cls, data):
         # Produce an AttributeList from the data
@@ -67,9 +67,9 @@ class DShieldDataProvider(DataProvider):
     
     _endpoint = "http://www.dshield.org/api/ip/{0}"
     _handlers = [
-        ("mindate", "first_event_ts", handle_date),
-        ("maxdate", "last_event_ts", handle_date),
-        ("updated", "update_ts", handle_datetime),
+        ("mindate", "first_event_ts", _handle_date),
+        ("maxdate", "last_event_ts", _handle_date),
+        ("updated", "update_ts", _handle_datetime),
         ("count", "n_attack_packets", int),
         ("attacks", "n_attack_targets", int),
         ("country", "country", lambda x: x),
