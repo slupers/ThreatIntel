@@ -98,34 +98,38 @@ class TitanDataProvider(DataProvider):
     @staticmethod
     def _parsesample(sample, analyses):
         # Process sample metadata
-        info = {}
+        info = AttributeList()
         for k, v in sample.iteritems():
             try:
                 if k == "filename":
-                    info["file_name"] = v
+                    info.append(("file_name", v))
                 elif k == "hashes":
                     for k2, v2 in v.iteritems():
                         if k2 in ("md5", "sha1", "sha256"):
                             hexstr = binascii.unhexlify(v2["@Hash"])
-                            info["sample_" + k2] = hexstr
+                            #info["sample_" + k2] = hexstr
+                            info.append(("sample_" + k2, hexstr))
                 elif k == "ingest_date":
                     ts = long(v["$date"]) / 1000
                     dtv = datetime.datetime.utcfromtimestamp(ts)
-                    info["first_event_ts"] = dtv
+                    #info["first_event_ts"] = dtv
+                    info.append(("first_event_ts" , dtv))
                 elif k == "last_ingested":
                     ts = long(v["$date"]) / 1000
                     dtv = datetime.datetime.utcfromtimestamp(ts)
-                    info["last_event_ts"] = dtv
+                    #info["last_event_ts"] = dtv
+                    info.append(("last_event_ts" , dtv))
             except Exception:
                 pass
         
         # Dump analysis information into its own entry
         # FIXME: This is lame
-        info["analyses"] = analyses
-        info2 = AttributeList()
-        for k, v in info.iteritems():
-            info2.append((k, unicode(repr(v))))
-        return InformationSet(DISP_INFORMATIONAL, info2)
+        #info["analyses"] = analyses
+        for i in analyses:
+            for k, v in i.iteritems():
+                info.append((unicode(k),unicode(v)))
+        #info.append(("analyses",unicode(analyses)))
+        return InformationSet(DISP_INFORMATIONAL, info)
     
     @staticmethod
     def _parseresult(result):
