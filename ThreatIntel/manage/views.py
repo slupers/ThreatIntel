@@ -1,7 +1,8 @@
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import render_to_response
-from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseRedirect, HttpResponse, StreamingHttpResponse
+from django.shortcuts import render_to_response
+from django.template import RequestContext, loader
+import django.utils.html as html
 from manage.models import *
 
 import sys
@@ -12,7 +13,7 @@ from data import *
 # the decorator prevents access and redirects users who have not logged in
 @login_required(redirect_field_name='/login')
 def query(request):
-    '''Takes user's query and processes it'''
+    '''Takes user's query and processes it'''    
     state = ''
     api_info = []
     data = []
@@ -21,23 +22,18 @@ def query(request):
         form = QueryForm(request.POST)
         if form.is_valid():
             query = request.POST.get('query')
-            data = handle_query(request.user, query)
+            return handle_query(request, form, query)
         else:
             state = 'Invalid form. Try again.'
 
     form = QueryForm()
-    # pass in the dictionary of data for each API
-    return render_to_response('query.html', {'form': form, 'state': state, 'data': data}, RequestContext(request))
+    
+    return render_to_response('query.html', {'form': form, 'state': state}, RequestContext(request))
 
-
-def handle_query(user, query):
+def handle_query(request, form, query):
     '''Get info for query entered by user'''
-    api_info = []
-
-    # get api keys of the user
-    account = user.config
-
-    # intialize providers
+    # Construct providers from user's info
+    account = request.user.config
     providers = []
     providers.append(DShieldDataProvider())
     providers.append(ShadowServerDataProvider())
@@ -53,8 +49,24 @@ def handle_query(user, query):
     if len(titancert) != 0 and len(titankey) != 0:
         providers.append(TitanDataProvider(titancert, titankey))
 
-    # get data for query
-    return DataProvider.queryn(query, providers)
+    # Perform the query
+    data = DataProvider.queryn(query, providers)
+    def produce():
+        tqheader = loader.get_template("query.html")
+        tqfooter = loader.get_template("query_footer.html")
+        ctx = RequestContext(request, {"form": form, "state": ""})
+        print("yielding header")
+        yield tqheader.render(ctx)
+        print("yielding data")
+        for p, iset in data:
+            fmt = "<div class=\"result disp{0}\"><h2>{1}</h2>{2}</div>"
+            tbl = iset.info.as_table()
+            output = fmt.format(iset.disposition, html.escape(p.name), tbl)
+            output += ' ' * 1024
+            yield output
+        print("yielding footer")
+        yield tqfooter.render(ctx)
+    return StreamingHttpResponse(produce())
 
 # the decorator prevents access and redirects users who have not logged in
 @login_required(redirect_field_name='/login')

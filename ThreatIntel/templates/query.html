@@ -16,18 +16,4 @@
 		<a id="logo" href="/">ThreatIntel</a>
 		<a id="logout" href="/logout">(logout)</a>
 	</header>
-
 	<main>
-	{% for entry in data %}
-	{% with provider=entry.0 iset=entry.1 %}
-	<div class="result disp{{ iset.disposition }}">
-		<h2>{{ provider.name }}</h2>
-		{{ iset.info.as_table|safe }}
-    </div>
-    {% endwith %}
-	{% empty %}
-	<span class="none">No Results</span>
-	{% endfor %}
-	</main>
-</body>
-</html>
