@@ -58,6 +58,7 @@ class DataProvider(object):
                 msg = e.message
             except Exception as e:
                 msg = "An internal error occurred"
+                raise
             info = AttributeList()
             info.append(("message", msg))
             return (p, InformationSet(DISP_FAILURE, info))
