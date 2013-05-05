@@ -47,15 +47,18 @@ def query_execute(request):
     providers = construct_providers(request.user.config)
     data = DataProvider.queryn(query, providers)
     def produce():
-        tqheader = loader.get_template("query.html")
-        tqentry = loader.get_template("query_entry.html")
-        tqfooter = loader.get_template("query_footer.html")
+        tqheader = loader.get_template("result_header.html")
+        tqentry = loader.get_template("result_entry.html")
+        tqfooter = loader.get_template("result_footer.html")
         yield tqheader.render(ctx)
         ctx.push()
         for entry in data:
             ctx["entry"] = entry
             yield tqentry.render(ctx)
             yield ' ' * 1024
+        else:
+            tqempty = loader.get_template("result_empty.html")
+            yield tqempty.render(ctx)
         ctx.pop()
         yield tqfooter.render(ctx)
     return StreamingHttpResponse(produce())
