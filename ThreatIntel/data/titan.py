@@ -8,6 +8,7 @@ import json
 import numbers
 import os
 import requests
+import pprint
 from .base import *
 from manage.presentation import *
 
@@ -95,8 +96,8 @@ class TitanDataProvider(DataProvider):
         else:
             return None
     
-    @staticmethod
-    def _parsesample(sample, analyses):
+    @classmethod
+    def _parsesample(cls, sample, analyses):
         # Process sample metadata
         info = AttributeList()
         for k, v in sample.iteritems():
@@ -123,12 +124,15 @@ class TitanDataProvider(DataProvider):
                 pass
         
         # Dump analysis information into its own entry
-        # FIXME: This is lame
-        #info["analyses"] = analyses
-        for i in analyses:
-            for k, v in i.iteritems():
-                info.append((unicode(k),unicode(v)))
-        #info.append(("analyses",unicode(analyses)))
+        adata = EntityList(("analysis", ))
+        for analysis in analyses:
+            for atype in analysis["types"]:
+                fn = cls._aformatters.get(atype)
+                if fn != None:
+                    typedata = fn(analysis[atype])
+                    typedata.insert(0, (("analysis_mode", atype)))
+                    adata.append((typedata, ))
+        info.append(("analyses", adata))
         return InformationSet(DISP_INFORMATIONAL, info)
     
     @staticmethod
@@ -150,18 +154,23 @@ class TitanDataProvider(DataProvider):
         
         # Process the output
         return self._parsesample(sample, analyses)
-    
-    #def _qdomain(self, domain):
-    #    query = {"_id": domain}
-    #    return self._submitqueryexternal("find_one", "domain_yesterday", query)
 
-    #def _qurl(self, url):
-    #    query = {"url": url}
-    #    return self._submitqueryexternal("find_one", "sample", query)
-
-    #def _qipaddr(self, addr):
-    #    query = {"_id": addr}
-    #    return self._submitqueryexternal("find_one", "ip_yesterday", query)
+    _aformatters = {
+        "pcap": None,
+        "network": None,
+        "av": None,
+        "syscall": None,
+        "dropped_files": None,
+        "nids": None,
+        "screenshots": None,
+        "url": None,
+        "executable": None,
+        "android": None,
+        "cdf": None,
+        "flash": None,
+        "jpeg": None,
+        "other": None
+    }    
 
 __all__ = [
     b"TitanDataProvider"
