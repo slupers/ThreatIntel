@@ -3,7 +3,7 @@
 }
 html {
     background-color: #161712;
-    font-family: monospace;
+    font: 10pt monospace;
 }
 header {
     width: 100%;
@@ -57,21 +57,25 @@ main {
     background-color: #333;
     padding: 2px;
 }
-.result table td {
-    padding-right: 30px;
-}
 
 td, th {
     vertical-align: top;
-    white-space: nowrap;
 }
 th {
     text-align: left;
     font-weight: bold;
-    width: 250px;
 }
-thead th {
+div.result td, div.result th {
+    white-space: nowrap;
+    padding-right: 10px;
+}
+div.result th {
+    width: 15em;
+}
+div.result thead th {
     width: auto;
+    font-weight: normal;
+    font-style: italic;
 }
 
 .result.disp1 {
