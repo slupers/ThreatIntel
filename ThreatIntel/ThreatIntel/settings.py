@@ -89,3 +89,10 @@ AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
 )
 LOGIN_URL = "/login/"
+
+#
+# Locale
+#
+LOCALE_PATHS = (
+        os.path.join(SITE_BASE, "../locale")
+)

@@ -1,0 +1,18 @@
+# Copyright (C) 2013
+# kevin kevin@whatever.com
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.01\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-05-05 03:04+0000\n"
+"PO-Revision-Date: 2013-05-05 03:07+0000\n"
+"Last-Translator: kevin s kevin@whatever.com\n"
+"Language-Team: en-us LL@li.org\n"
+"Language: en-us\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "first_event_ts"
+msgstr "First Event Time"

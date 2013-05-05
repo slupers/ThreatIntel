@@ -4,6 +4,7 @@ import binascii
 from datetime import date, datetime
 import django.utils.formats as formats
 import django.utils.html as html
+from django.utils.translation import ugettext
 
 #
 # Presentable structures
@@ -24,7 +25,7 @@ class AttributeList(list):
     def as_table(self):
         val = "<table>"
         for k, v in self:
-            cell1 = html.escape(k) # TODO: translate me
+            cell1 = ugettext(k)
             cell2 = present(v)
             val += "<tr><th>{0}</th><td>{1}</td></tr>".format(cell1, cell2)
         val += "</table>"
@@ -50,7 +51,7 @@ class EntityList(list):
     def as_table(self):
         val = "<table><thead>"
         for v in self._ctags:
-            cell = html.escape(v) # TODO: translate me
+            cell = ugettext(v)
             val += "<th>{0}</th>".format(cell)
         val += "</thead><tbody>"
         for v in self:
