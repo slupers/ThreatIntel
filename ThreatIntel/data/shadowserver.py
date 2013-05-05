@@ -55,7 +55,7 @@ class ShadowServerDataProvider(DataProvider):
                 info.append(("sample_ssdeep", row[5]))
             if len(row[4]) > 0:
                 info.append(("file_type", row[4]))
-        rlocs = EntityList(("av_engine", "record_locator"))
+        rlocs = EntityList(("av_engine", "av_record_locator"))
         for t in json.loads(jsondata).iteritems():
             rlocs.append(t)
         info.append(("scan_details", rlocs))

@@ -2,6 +2,8 @@
 {% with provider=entry.0 iset=entry.1 %}
 		<div class="result disp{{ iset.disposition }}">
 			<h2>{% trans provider.name %}</h2>
-			{{ iset.info.as_table|safe }}
+			<div class="content">
+				{{ iset.info.as_table|safe }}
+			</div>
 		</div>
 {% endwith %}

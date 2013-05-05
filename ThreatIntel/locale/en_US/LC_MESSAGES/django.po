@@ -104,9 +104,6 @@ msgstr "Report URL"
 msgid "av_definition_ver"
 msgstr "Definition"
 
-msgid "av_engine_ver"
-msgstr "Version"
-
 msgid "scan_positive"
 msgstr "Hit"
 

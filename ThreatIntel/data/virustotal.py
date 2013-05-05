@@ -90,19 +90,21 @@ class VirusTotalDataProvider(DataProvider):
         # Construct an EntityList from the scan details
         if len(scans) == 0:
             return None
-        hdrs = ("av_engine", "av_engine_ver", "av_record_locator", "av_definition_ver")
+        hdrs = ("av_engine", "av_record_locator", "av_definition_ver")
         info = EntityList(hdrs)
         scaninfo = scans.items()
         scaninfo.sort(key=operator.itemgetter(0))
         for av_engine, entry in scaninfo:
-            av_engine_ver = entry.get("version")
             av_record_locator = entry.get("result")
             if av_record_locator == None:
                 continue
+            av_engine_ver = entry.get("version")
+            if av_engine_ver != None and len(av_engine_ver) != 0:
+                av_engine = "{0} ({1})".format(av_engine, av_engine_ver)
             av_definition_ver = entry.get("update")
             if av_definition_ver != None:
                 av_definition_ver = datetime.strptime(av_definition_ver, "%Y%m%d").date()
-            info.append((av_engine, av_engine_ver, av_record_locator, av_definition_ver))
+            info.append((av_engine, av_record_locator, av_definition_ver))
         return info
     
     def _parse_resolutions(res):
