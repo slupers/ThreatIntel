@@ -68,9 +68,10 @@ class EntityList(list):
 #
 
 def present_bytes(value):
-    # Courtesy of http://stackoverflow.com/questions/2657693/insert-a-newline-character-every-64-characters-using-python
     hexed = binascii.hexlify(value).decode()
-    return '<br>'.join(hexed[i:i + 32] for i in xrange(0, len(hexed), 32))
+    if len(hexed) <= 40:
+        return hexed
+    return "<span class=\"longhex\">{0}</span>".format(hexed)
 
 def present_generic(value):
     return html.escape(formats.localize(value))

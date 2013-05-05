@@ -77,6 +77,12 @@ div.result thead th {
     font-weight: normal;
     font-style: italic;
 }
+span.longhex {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 20em;
+}
 
 .result.disp1 {
     border-left-color: #01df01;
