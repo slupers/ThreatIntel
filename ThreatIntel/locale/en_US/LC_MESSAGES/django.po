@@ -78,7 +78,7 @@ msgid "n_scans"
 msgstr "Scan count"
 
 msgid "n_scans_positive"
-msgstr "Positive scan count"
+msgstr "Hit count"
 
 msgid "sample_md5"
 msgstr "MD5 digest"
@@ -94,12 +94,6 @@ msgstr "ssdeep digest"
 
 msgid "av_engine"
 msgstr "Engine"
-
-msgid "av_record_locator"
-msgstr "Record locator"
-
-msgid "av_record_locators"
-msgstr "Record locators"
 
 msgid "file_type"
 msgstr "File type"
@@ -151,3 +145,12 @@ msgstr "Detections"
 
 msgid "url"
 msgstr "URL"
+
+msgid "analyses"
+msgstr "Analysis findings"
+
+msgid "analysis"
+msgstr "Finding"
+
+msgid "analysis_mode"
+msgstr "Analysis module"

@@ -53,6 +53,10 @@ class VirusTotalClient(object):
         """Retrieve VirusTotal information for the specified IPv4 address."""
         return self._get_report("ip-address", "GET", ip=ip)
     
+    def query_scan(self, resource):
+        """Retrieve VirusTotal information for the specified scan ID."""
+        return self._get_report("file", "POST", resource=resource)
+    
     def query_url(self, resource, scan):
         """Retrieve VirusTotal information for the specified Web address."""
         scan = int(scan)
@@ -64,21 +68,29 @@ class VirusTotalDataProvider(DataProvider):
         if self._keyregex.match(apikey) == None:
             raise ValueError(b"Invalid VirusTotal API key")
         self._client = VirusTotalClient(apikey)
-
+    
     @property
     def name(self):
         return "virustotal"
 
-    @classmethod
-    def _parse(cls, data):
+    def _parse(self, data):
         # Process each unit of data returned
         info = AttributeList()
-        for key, newkey, fn in cls._handlers:
+        for key, newkey, fn in self._handlers:
             value = data.get(key)
             if value != None:
                 newvalue = fn(value)
                 if newvalue != None:
                     info.append((newkey, newvalue))
+        fsid = data.get("filescan_id")
+        if fsid != None:
+            data2 = self._client.query_scan(fsid)
+            for key, newkey, fn in self._fhandlers:
+                value = data2.get(key)
+                if value != None:
+                    newvalue = fn(value)
+                    if newvalue != None:
+                        info.append((newkey, newvalue))
         
         # Decide on a disposition
         positives = int(data["positives"]) if "positives" in data else None
@@ -105,6 +117,25 @@ class VirusTotalDataProvider(DataProvider):
             info.append((occurrence_ts, hit_ratio, sample_sha256))
         return info
     
+    def _parse_file_scans(scans):
+        # Construct an EntityList from the scan details
+        if len(scans) == 0:
+            return None
+        hdrs = ("av_engine", "av_engine_ver", "scan_result", "av_definition_ver")
+        info = EntityList(hdrs)
+        scaninfo = scans.items()
+        scaninfo.sort(key=operator.itemgetter(0))
+        for av_engine, entry in scaninfo:
+            av_engine_ver = entry.get("version")
+            scan_result = entry.get("result")
+            if scan_result == None:
+                continue
+            av_definition_ver = entry.get("update")
+            if av_definition_ver != None:
+                av_definition_ver = datetime.strptime(av_definition_ver, "%Y%m%d").date()
+            info.append((av_engine, av_engine_ver, scan_result, av_definition_ver))
+        return info
+    
     def _parse_resolutions(res):
         # Construct an EntityList from the resolutions
         if len(res) == 0:
@@ -121,26 +152,22 @@ class VirusTotalDataProvider(DataProvider):
             info.append((occurrence_ts, correspondance))
         return info
     
-    def _parse_scans(scans):
+    def _parse_url_scans(scans):
         # Construct an EntityList from the scan details
         if len(scans) == 0:
             return None
-        hdrs = ("av_engine", "scan_positive", "av_engine_ver", "scan_result", "av_definition_ver")
+        hdrs = ("av_engine", "scan_result")
         info = EntityList(hdrs)
         scaninfo = scans.items()
         scaninfo.sort(key=operator.itemgetter(0))
         for av_engine, entry in scaninfo:
-            scan_positive = entry.get("detected")
-            av_engine_ver = entry.get("version")
+            scan_positive = entry.get("detected", True)
             scan_result = entry.get("result")
-            av_definition_ver = entry.get("update")
             if scan_result == "clean site":
                 scan_result = None
             if not scan_positive and scan_result == None:
                 continue
-            if av_definition_ver != None:
-                av_definition_ver = datetime.strptime(av_definition_ver, "%Y%m%d").date()
-            info.append((av_engine, scan_positive, av_engine_ver, scan_result, av_definition_ver))
+            info.append((av_engine, scan_result))
         return info
     
     def _parse_urls(urls):
@@ -175,13 +202,23 @@ class VirusTotalDataProvider(DataProvider):
         ("md5", "sample_md5", binascii.unhexlify),
         ("sha1", "sample_sha1", binascii.unhexlify),
         ("sha256", "sample_sha256", binascii.unhexlify),
-        ("positives", "n_scans_positive", lambda x: x),
-        ("total", "n_scans", lambda x: x),
-        ("scans", "scan_details", _parse_scans),
-        ("permalink", "report_url", lambda x: x),
+        ("positives", "n_scans_positive", lambda v: v),
+        ("total", "n_scans", lambda v: v),
+        ("scans", "scan_details", _parse_url_scans),
+        ("permalink", "report_url", lambda v: v),
         ("resolutions", "correspondances", _parse_resolutions),
         ("detected_communicating_samples", "communicating_samples", _parse_dcs),
         ("detected_urls", "detections", _parse_urls)
+    ]
+    _fhandlers = [
+        ("scan_date", "update_ts", lambda v: datetime.strptime(v, "%Y-%m-%d %H:%M:%S")),
+        ("md5", "sample_md5", binascii.unhexlify),
+        ("sha1", "sample_sha1", binascii.unhexlify),
+        ("sha256", "sample_sha256", binascii.unhexlify),
+        ("positives", "n_scans_positive", lambda v: v),
+        ("total", "n_scans", lambda v: v),
+        ("scans", "scan_details", _parse_file_scans),
+        ("permalink", "report_url", lambda v: v)
     ]
 
 __all__ = [
