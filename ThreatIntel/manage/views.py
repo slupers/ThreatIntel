@@ -15,21 +15,10 @@ from data import *
 @login_required(redirect_field_name='/login')
 def query(request):
     '''Takes user's query and processes it'''    
-    state = ''
-    data = []
     if request.method == 'POST':
-        # put user-entered information in form
-        form = QueryForm(request.POST)
-        if form.is_valid():
-            query = request.POST.get('query')
-            ctx = RequestContext(request, {"form": form, "state": ""})
-            providers = construct_providers(request.user.config)
-            return process_query(query, providers, ctx)
-        else:
-            state = 'Invalid form. Try again.'
-
+        return query_execute(request)
     form = QueryForm()
-    return render_to_response('query.html', {'form': form, 'state': state}, RequestContext(request))
+    return render_to_response('query.html', {'form': form, 'state': ""}, RequestContext(request))
 
 def construct_providers(config):
     # Construct providers from user's info
@@ -49,17 +38,25 @@ def construct_providers(config):
         providers.append(TitanDataProvider(titancert, titankey))
     return providers
 
-def process_query(query, providers, ctx):
+def query_execute(request):
+    form = QueryForm(request.POST)
+    if not form.is_valid():
+        pass # do some error thing
+    query = form.cleaned_data["query"].strip()
+    ctx = RequestContext(request, {"form": form, "state": ""})
+    providers = construct_providers(request.user.config)
     data = DataProvider.queryn(query, providers)
     def produce():
         tqheader = loader.get_template("query.html")
+        tqentry = loader.get_template("query_entry.html")
         tqfooter = loader.get_template("query_footer.html")
         yield tqheader.render(ctx)
-        for p, iset in data:
-            fmt = "<div class=\"result disp{0}\"><h2>{1}</h2>{2}</div>"
-            tbl = iset.info.as_table()
-            yield fmt.format(iset.disposition, html.escape(ugettext(p.name)), tbl)
+        ctx.push()
+        for entry in data:
+            ctx["entry"] = entry
+            yield tqentry.render(ctx)
             yield ' ' * 1024
+        ctx.pop()
         yield tqfooter.render(ctx)
     return StreamingHttpResponse(produce())
 

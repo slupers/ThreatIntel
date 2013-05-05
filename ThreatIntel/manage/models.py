@@ -1,5 +1,5 @@
-from django.forms import ModelForm
-from django.db import models
+import django.forms as forms
+import django.db.models as models
 from django.contrib.auth.models import User
 
 class UserConfiguration(models.Model):
@@ -10,7 +10,7 @@ class UserConfiguration(models.Model):
     vtotkey = models.CharField("VirusTotal API key", max_length=64, blank=True)
     ptankkey = models.CharField("PhishTank API key", max_length=64, blank=True)
 
-class KeysForm(ModelForm):
+class KeysForm(forms.ModelForm):
     class Meta:
         model = UserConfiguration
         fields = ('titancert', 'titankey', 'cifkey', 'vtotkey', 'ptankkey')
@@ -22,11 +22,5 @@ class KeysForm(ModelForm):
         self.fields['vtotkey'].required = False
         self.fields['ptankkey'].required = False
 
-class qry(models.Model):
-    query = models.CharField(max_length=512)
-    #query_type = models.CharField(max_length=255, choices=[('ipv4','IPv4'),('ipv6','IPv6'),('fqdn','FQDN'),('url','URL'),('hash','Malware hash')])
-
-class QueryForm(ModelForm):
-    class Meta:
-        model = qry
-        fields = ('query',)#, 'query_type')
+class QueryForm(forms.Form):
+    query = forms.CharField(min_length=1)
