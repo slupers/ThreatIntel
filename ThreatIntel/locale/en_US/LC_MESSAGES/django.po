@@ -44,11 +44,8 @@ msgstr "Network prefix"
 msgid "peer_as_list"
 msgstr "AS peers"
 
-msgid "domain"
-msgstr "Domain name"
-
 msgid "isp"
-msgstr "Internet service provider"
+msgstr "ISP"
 
 msgid "first_event_ts"
 msgstr "First event time"
@@ -117,7 +114,10 @@ msgid "scan_details"
 msgstr "Scan information"
 
 msgid "scan_result"
-msgstr "Outcome"
+msgstr "Evaluation"
+
+msgid "av_record_locator"
+msgstr "Record locator"
 
 msgid "correspondances"
 msgstr "Correspondances"
@@ -147,13 +147,13 @@ msgid "url"
 msgstr "URL"
 
 msgid "analyses"
-msgstr "Analysis findings"
+msgstr "Analysis runs"
 
 msgid "analysis"
-msgstr "Finding"
-
-msgid "analysis_mode"
-msgstr "Analysis module"
+msgstr "Run"
 
 msgid "file_info"
 msgstr "Payload analysis"
+
+msgid "analysis_av"
+msgstr "Antivirus scan"

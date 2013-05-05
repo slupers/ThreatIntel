@@ -7,9 +7,6 @@ from .base import *
 from manage.presentation import *
 
 class PhishTankDataProvider(DataProvider):
-    _endpoint = "http://checkurl.phishtank.com/checkurl/"
-    _keyregex = re.compile(r"^[a-f0-9]{64}$")
-
     def __init__(self, apikey=None):
         if apikey != None:
             assert isinstance(apikey, basestring)
@@ -53,6 +50,9 @@ class PhishTankDataProvider(DataProvider):
         except Exception:
             raise QueryError(b"Received data in unexpected format")
         return InformationSet(disp, info)
+    
+    _endpoint = "http://checkurl.phishtank.com/checkurl/"
+    _keyregex = re.compile(r"^[a-f0-9]{64}$")
 
 __all__ = [
     b"PhishTankDataProvider"

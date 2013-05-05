@@ -56,6 +56,7 @@ class DataProvider(object):
                 return (p, p._query(ntarget, qtype))
             #except QueryError as e:
             except Exception as e:
+                raise
                 msg = unicode(e.message)
             #except Exception as e:
             #    msg = "An internal error occurred"

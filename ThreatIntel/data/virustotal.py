@@ -9,9 +9,7 @@ import operator
 import requests
 from .base import *
 
-class VirusTotalClient(object):
-    _endpoint = "https://www.virustotal.com/vtapi/v2/{0}/report"
-    
+class VirusTotalClient(object):    
     def __init__(self, apikey):
         self._apikey = apikey
     
@@ -34,7 +32,6 @@ class VirusTotalClient(object):
         
         # Decode and check for errors
         res = r.json()
-        print(res)
         rcode = res.get("response_code")
         if rcode == None or rcode < 0:
             msg = res.get("verbose_msg")
@@ -62,6 +59,8 @@ class VirusTotalClient(object):
         """Retrieve VirusTotal information for the specified Web address."""
         scan = int(scan)
         return self._get_report("url", "POST", resource=resource, scan=scan)
+    
+    _endpoint = "https://www.virustotal.com/vtapi/v2/{0}/report"
 
 class VirusTotalDataProvider(DataProvider):
     def __init__(self, apikey):
@@ -91,19 +90,19 @@ class VirusTotalDataProvider(DataProvider):
         # Construct an EntityList from the scan details
         if len(scans) == 0:
             return None
-        hdrs = ("av_engine", "av_engine_ver", "scan_result", "av_definition_ver")
+        hdrs = ("av_engine", "av_engine_ver", "av_record_locator", "av_definition_ver")
         info = EntityList(hdrs)
         scaninfo = scans.items()
         scaninfo.sort(key=operator.itemgetter(0))
         for av_engine, entry in scaninfo:
             av_engine_ver = entry.get("version")
-            scan_result = entry.get("result")
-            if scan_result == None:
+            av_record_locator = entry.get("result")
+            if av_record_locator == None:
                 continue
             av_definition_ver = entry.get("update")
             if av_definition_ver != None:
                 av_definition_ver = datetime.strptime(av_definition_ver, "%Y%m%d").date()
-            info.append((av_engine, av_engine_ver, scan_result, av_definition_ver))
+            info.append((av_engine, av_engine_ver, av_record_locator, av_definition_ver))
         return info
     
     def _parse_resolutions(res):

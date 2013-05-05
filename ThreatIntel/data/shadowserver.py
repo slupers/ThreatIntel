@@ -13,11 +13,7 @@ import socket
 from socket import AF_INET, IPPROTO_TCP, SOCK_STREAM
 from .base import *
 
-class ShadowServerDataProvider(DataProvider):
-    _whoissvr = "asn.shadowserver.org"
-    _urlbase = "http://innocuous.shadowserver.org/api/"
-    _wregex = re.compile("^! Whitelisted: (.*?), (.*), (.*)$")
-    
+class ShadowServerDataProvider(DataProvider):    
     @classmethod
     def _avlookup(cls, target):
         # Retrieve malware information by MD5/SHA1 hash
@@ -59,7 +55,7 @@ class ShadowServerDataProvider(DataProvider):
                 info.append(("sample_ssdeep", row[5]))
             if len(row[4]) > 0:
                 info.append(("file_type", row[4]))
-        rlocs = EntityList(("av_engine", "scan_result"))
+        rlocs = EntityList(("av_engine", "record_locator"))
         for t in json.loads(jsondata).iteritems():
             rlocs.append(t)
         info.append(("scan_details", rlocs))
@@ -100,17 +96,26 @@ class ShadowServerDataProvider(DataProvider):
             cmps[-1] = cmps[-1][:-1]
         
         # Produce an InformationSet from the data
-        peers = EntityList(("as_number", ))
-        for asn in cmps[0].split(" "):
-            peers.append((int(asn), ))
         info = AttributeList()
-        info.append(("country", cmps[4]))
-        info.append(("as_number", int(cmps[1])))
-        info.append(("as_name", cmps[3]))
-        info.append(("network_prefix", cmps[2]))
-        info.append(("peer_as_list", peers))
-        info.append(("domain", cmps[5]))
-        info.append(("isp", cmps[6]))
+        peers = None
+        if len(cmps[0]) != 0:
+            peers = EntityList(("as_number", ))
+            for asn in cmps[0].split(" "):
+                peers.append((int(asn), ))
+        if len(cmps[4]) > 0 and cmps[4] != "-":
+            info.append(("country", cmps[4]))
+        if len(cmps[1]) > 0:
+            info.append(("as_number", int(cmps[1])))
+        if len(cmps[3]) > 0:
+            info.append(("as_name", cmps[3]))
+        if len(cmps[2]) > 0:
+            info.append(("network_prefix", cmps[2]))
+        if peers != None:
+            info.append(("peer_as_list", peers))
+        if len(cmps[5]) > 0 and cmps[5] != "-":
+            info.append(("correspondance", cmps[5]))
+        if len(cmps[6]) > 0:
+            info.append(("isp", cmps[6]))
         return InformationSet(DISP_INFORMATIONAL, info)
     
     @property
@@ -123,3 +128,11 @@ class ShadowServerDataProvider(DataProvider):
         elif qtype in (QUERY_MD5, QUERY_SHA1):
             return self._avlookup(target)
         return None
+
+    _whoissvr = "asn.shadowserver.org"
+    _urlbase = "http://innocuous.shadowserver.org/api/"
+    _wregex = re.compile("^! Whitelisted: (.*?), (.*), (.*)$")
+
+__all__ = [
+    b"ShadowServerDataProvider"
+]

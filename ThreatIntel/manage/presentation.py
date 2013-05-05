@@ -62,11 +62,11 @@ class EntityList(list):
         return self._ctags
         
     def as_table(self):
-        val = "<table><thead>"
+        val = "<table><thead><tr>"
         for v in self._ctags:
             cell = html.escape(ugettext(v))
             val += "<th>{0}</th>".format(cell)
-        val += "</thead><tbody>"
+        val += "</tr></thead><tbody>"
         for v in self:
             val += "<tr>"
             for e in v:

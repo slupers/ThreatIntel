@@ -37,8 +37,7 @@ header form {
 main {
     margin: 0 auto;
     padding: 50px 10px 10px;
-    max-width: 960px;
-
+    width: 100%;
     background-color: #1c1c1c;
     color: #aaccff;
 }
@@ -65,23 +64,25 @@ th {
     text-align: left;
     font-weight: bold;
 }
+thead th {
+    font-weight: normal;
+    font-style: italic;
+}
 div.result td, div.result th {
     white-space: nowrap;
     padding-right: 10px;
 }
 div.result th {
-    width: 15em;
+    min-width: 12em;
 }
-div.result thead th {
-    width: auto;
-    font-weight: normal;
-    font-style: italic;
+div.result table>thead>tr>th {
+    min-width: 0;
 }
 span.longhex {
-    display: block;
+    /*display: block;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 20em;
+    max-width: 20em;*/
 }
 
 .result.disp1 {
