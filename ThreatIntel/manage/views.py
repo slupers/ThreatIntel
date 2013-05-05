@@ -50,8 +50,8 @@ def handle_query(user, query):
         providers.append(VirusTotalDataProvider(apikey=vtotkey))
     titancert = account.titancert
     titankey = account.titankey
-    #if len(titancert) != 0 and len(titankey) != 0:
-    #    providers.append(TitanDataProvider(titancert, titankey))
+    if len(titancert) != 0 and len(titankey) != 0:
+        providers.append(TitanDataProvider(titancert, titankey))
 
     # get data for query
     return DataProvider.queryn(query, providers)

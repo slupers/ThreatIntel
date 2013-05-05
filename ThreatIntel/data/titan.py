@@ -9,6 +9,7 @@ import numbers
 import os
 import requests
 from .base import *
+from manage.presentation import *
 
 class TitanClient(object):
     SORT_ASCENDING = 1
@@ -121,7 +122,10 @@ class TitanDataProvider(DataProvider):
         # Dump analysis information into its own entry
         # FIXME: This is lame
         info["analyses"] = analyses
-        return InformationSet(DISP_INFORMATIONAL, **info)
+        info2 = AttributeList()
+        for k, v in info.iteritems():
+            info2.append((k, unicode(repr(v))))
+        return InformationSet(DISP_INFORMATIONAL, info2)
     
     @staticmethod
     def _parseresult(result):
