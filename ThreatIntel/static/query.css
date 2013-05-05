@@ -59,8 +59,17 @@ main {
 .result table td {
     padding-right: 30px;
 }
-.result table td:first-child {
+
+td, th {
+    vertical-align: top;
+}
+th {
+    text-align: left;
     font-weight: bold;
+    width: 250px;
+}
+thead th {
+    width: auto;
 }
 
 .result.disp1 {
