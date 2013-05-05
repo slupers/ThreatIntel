@@ -96,6 +96,14 @@ class TitanDataProvider(DataProvider):
             info.append(("error_message", entry["error"]))
         return info
     
+    def _format_jpeg(entry):
+        info = AttributeList()
+        comment = entry["comment"]
+        standard = entry["standard"]
+        info.append(("comment", comment))
+        info.append(("standard", standard))
+        return info
+    
     @property
     def name(self):
         return "titan"
