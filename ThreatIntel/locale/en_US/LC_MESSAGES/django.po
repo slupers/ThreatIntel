@@ -14,6 +14,21 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "virustotal"
+msgstr "VirusTotal"
+
+msgid "titan"
+msgstr "Titan"
+
+msgid "shadowserver"
+msgstr "ShadowServer"
+
+msgid "phishtank"
+msgstr "PhishTank"
+
+msgid "dshield"
+msgstr "DShield"
+
 msgid "country"
 msgstr "Country"
 
@@ -130,3 +145,9 @@ msgstr "Software vendor"
 
 msgid "comment"
 msgstr "Comment"
+
+msgid "detections"
+msgstr "Detections"
+
+msgid "url"
+msgstr "URL"

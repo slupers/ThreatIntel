@@ -4,11 +4,11 @@ from django.contrib.auth.models import User
 
 class UserConfiguration(models.Model):
     user = models.OneToOneField(User, related_name="config", primary_key=True)
-    titancert = models.TextField(blank=True)
-    titankey = models.TextField(blank=True)
-    cifkey = models.CharField(max_length=36, blank=True)
-    vtotkey = models.CharField(max_length=64, blank=True)
-    ptankkey = models.CharField(max_length=64, blank=True)
+    titancert = models.TextField("Titan certificate", blank=True)
+    titankey = models.TextField("Titan private key", blank=True)
+    cifkey = models.CharField("CIF API key", max_length=36, blank=True)
+    vtotkey = models.CharField("VirusTotal API key", max_length=64, blank=True)
+    ptankkey = models.CharField("PhishTank API key", max_length=64, blank=True)
 
 class KeysForm(ModelForm):
     class Meta:

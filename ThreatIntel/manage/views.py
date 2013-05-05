@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse, StreamingHttpRespons
 from django.shortcuts import render_to_response
 from django.template import RequestContext, loader
 import django.utils.html as html
+from django.utils.translation import ugettext
 from manage.models import *
 
 import sys
@@ -57,7 +58,7 @@ def process_query(query, providers, ctx):
         for p, iset in data:
             fmt = "<div class=\"result disp{0}\"><h2>{1}</h2>{2}</div>"
             tbl = iset.info.as_table()
-            yield fmt.format(iset.disposition, html.escape(p.name), tbl)
+            yield fmt.format(iset.disposition, html.escape(ugettext(p.name)), tbl)
             yield ' ' * 1024
         yield tqfooter.render(ctx)
     return StreamingHttpResponse(produce())

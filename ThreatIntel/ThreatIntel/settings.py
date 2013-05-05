@@ -13,15 +13,30 @@ SITE_BASE = os.path.dirname(os.path.realpath(__file__))
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 ALLOWED_HOSTS = [] # FIXME
-TIME_ZONE = "Etc/UTC"
-LANGUAGE_CODE = "en-us"
-USE_I18N = True
-USE_L10N = False
-USE_TZ = True
 WSGI_APPLICATION = "ThreatIntel.wsgi.application"
 ROOT_URLCONF = "ThreatIntel.urls"
 SECRET_KEY = "z$a6sqedr$ni2zil+7oktg9_4e@!znm_4pufmm9bw=3n#@&amp;fo@" # FIXME
 LOGGING_CONFIG = None
+
+#
+# Time and date
+#
+
+TIME_ZONE = "Etc/UTC"
+USE_L10N = False
+USE_TZ = True
+DATE_FORMAT = "d M Y"
+DATETIME_FORMAT = "d M Y H:i:s"
+
+#
+# i18n/l10n
+#
+
+LANGUAGE_CODE = "en-us"
+USE_I18N = True
+LOCALE_PATHS = [
+        os.path.join(SITE_BASE, "../locale")
+]
 
 #
 # Backends
@@ -89,10 +104,3 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend"
 ]
 LOGIN_URL = "/login/"
-
-#
-# Locale
-#
-LOCALE_PATHS = [
-        os.path.join(SITE_BASE, "../locale")
-]

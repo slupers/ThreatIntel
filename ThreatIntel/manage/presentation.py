@@ -4,7 +4,7 @@ import binascii
 from datetime import date, datetime
 import django.utils.formats as formats
 import django.utils.html as html
-from django.utils.translation import ugettext, get_language_info
+from django.utils.translation import ugettext
 
 #
 # Presentable structures
