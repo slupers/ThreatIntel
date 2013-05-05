@@ -84,20 +84,24 @@ class TitanDataProvider(DataProvider):
     def __init__(self, cert_pem, key_pem):
         self._client = TitanClient(cert_pem, key_pem)
     
+    def _format_av(entry):
+        info = AttributeList()
+        status = entry["status"]
+        if status == "clean":
+            info.append(("scan_positive", False))
+        elif status == "infected":
+            info.append(("scan_positive", True))
+            info.append(("scan_result", entry["virus"]))
+        else:
+            info.append(("error_message", entry["error"]))
+        return info
+    
     @property
     def name(self):
         return "titan"
     
-    def _query(self, target, qtype):
-        if qtype == QUERY_MD5:
-            return self._qhash(target, "md5")
-        elif qtype == QUERY_SHA1:
-            return self._qhash(target, "sha1")
-        else:
-            return None
-    
     @classmethod
-    def _parsesample(cls, sample, analyses):
+    def _parse(cls, sample, analyses):
         # Process sample metadata
         info = AttributeList()
         for k, v in sample.iteritems():
@@ -135,9 +139,13 @@ class TitanDataProvider(DataProvider):
         info.append(("analyses", adata))
         return InformationSet(DISP_INFORMATIONAL, info)
     
-    @staticmethod
-    def _parseresult(result):
-        pass
+    def _query(self, target, qtype):
+        if qtype == QUERY_MD5:
+            return self._qhash(target, "md5")
+        elif qtype == QUERY_SHA1:
+            return self._qhash(target, "sha1")
+        else:
+            return None
     
     def _qhash(self, hashval, hashtype):
         # Retrieve sample information
@@ -153,12 +161,12 @@ class TitanDataProvider(DataProvider):
         analyses = self._client.query("result", rquery, sort=sort)
         
         # Process the output
-        return self._parsesample(sample, analyses)
+        return self._parse(sample, analyses)
 
     _aformatters = {
         "pcap": None,
         "network": None,
-        "av": None,
+        "av": _format_av,
         "syscall": None,
         "dropped_files": None,
         "nids": None,
