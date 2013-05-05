@@ -109,6 +109,7 @@ class VirusTotalDataProvider(DataProvider):
         return info
     
     def _parse_resolutions(res):
+        # Construct an EntityList from the resolutions
         hdrs = ("occurrence_ts", "correspondance")
         info = EntityList(hdrs)
         for entry in res:
@@ -141,6 +142,20 @@ class VirusTotalDataProvider(DataProvider):
             info.append((av_engine, scan_positive, av_engine_ver, scan_result, av_definition_ver))
         return info
     
+    def _parse_urls(urls):
+        # Construct an EntityList from the detected URLs
+        hdrs = ("occurrence_ts", "n_scans_positive", "n_scans", "url")
+        info = EntityList(hdrs)
+        for entry in urls:
+            occurrence_ts = entry.get("scan_date")
+            n_scans_positive = entry.get("positives")
+            n_scans = entry.get("total")
+            url = entry.get("url")
+            if occurrence_ts != None:
+                occurrence_ts = datetime.strptime(occurrence_ts, "%Y-%m-%d %H:%M:%S")
+            info.append((occurrence_ts, n_scans_positive, n_scans, url))
+        return info
+    
     def _query(self, target, qtype):
         if qtype == QUERY_URL:
             res = self._client.query_url(target, True)
@@ -158,13 +173,13 @@ class VirusTotalDataProvider(DataProvider):
         ("md5", "sample_md5", binascii.unhexlify),
         ("sha1", "sample_sha1", binascii.unhexlify),
         ("sha256", "sample_sha256", binascii.unhexlify),
-        ("positives", "n_scans_positive", int),
-        ("total", "n_scans", int),
+        ("positives", "n_scans_positive", lambda x: x),
+        ("total", "n_scans", lambda x: x),
         ("scans", "scan_details", _parse_scans),
-        ("permalink", "report_url", lambda x: x),
+        ("permalink", "url", lambda x: x),
         ("resolutions", "correspondances", _parse_resolutions),
         ("detected_communicating_samples", "communicating_samples", _parse_dcs),
-        ("detected_urls", "malware_matches", unicode)
+        ("detected_urls", "detections", _parse_urls)
     ]
 
 __all__ = [
