@@ -1,21 +1,28 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-import gevent.monkey
-
-
+import requests
+import json
 
 class CIFDataProvider(DataProvider):
 
-    def __init__(self, svr):
-        self._svr = svr
+    _server = "https://192.17.19.200/api/"
+    
 
+    if __init__(self, key):
+        global key = key
+        
     @property
     def name(self):
         return "CIF"
+ 
+    def _parser(self, data):
+        return data
 
-    def parse_json(j):
-        
+    def _query(self, target, qtype):
 
-    def _query(self):
-        r = request.get("address")
-        j = r.json()
-        self.parse_json(j)
+        if qtype != QUERY_IPV4:
+            return None
+ 
+        args = {"apikey": key, "q": target}
+        r = request.get(self._server, params=args)
+        r.raise_for_status()
+        output = r.json()
+        return self._parser(output)
