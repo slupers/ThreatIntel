@@ -110,6 +110,8 @@ class VirusTotalDataProvider(DataProvider):
     
     def _parse_resolutions(res):
         # Construct an EntityList from the resolutions
+        if len(res) == 0:
+            return None
         hdrs = ("occurrence_ts", "correspondance")
         info = EntityList(hdrs)
         for entry in res:
@@ -124,6 +126,8 @@ class VirusTotalDataProvider(DataProvider):
     
     def _parse_scans(scans):
         # Construct an EntityList from the scan details
+        if len(scans) == 0:
+            return None
         hdrs = ("av_engine", "scan_positive", "av_engine_ver", "scan_result", "av_definition_ver")
         info = EntityList(hdrs)
         scaninfo = scans.items()
@@ -144,6 +148,8 @@ class VirusTotalDataProvider(DataProvider):
     
     def _parse_urls(urls):
         # Construct an EntityList from the detected URLs
+        if len(urls) == 0:
+            return None
         hdrs = ("occurrence_ts", "n_scans_positive", "n_scans", "url")
         info = EntityList(hdrs)
         for entry in urls:
