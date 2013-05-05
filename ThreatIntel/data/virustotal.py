@@ -108,6 +108,19 @@ class VirusTotalDataProvider(DataProvider):
             info.append((occurrence_ts, n_scans_positive, n_scans, sample_sha256))
         return info
     
+    def _parse_resolutions(res):
+        hdrs = ("occurrence_ts", "correspondance")
+        info = EntityList(hdrs)
+        for entry in res:
+            occurrence_ts = entry.get("last_resolved")
+            correspondance = entry.get("hostname")
+            if correspondance == None:
+                correspondance = entry.get("ip_address")
+            if occurrence_ts != None:
+                occurrence_ts = datetime.strptime(occurrence_ts, "%Y-%m-%d %H:%M:%S").date()
+            info.append((occurrence_ts, correspondance))
+        return info
+    
     def _parse_scans(scans):
         # Construct an EntityList from the scan details
         hdrs = ("av_engine", "scan_positive", "av_engine_ver", "scan_result", "av_definition_ver")
@@ -149,7 +162,7 @@ class VirusTotalDataProvider(DataProvider):
         ("total", "n_scans", int),
         ("scans", "scan_details", _parse_scans),
         ("permalink", "report_url", lambda x: x),
-        ("resolutions", "fqdn_matches", unicode),
+        ("resolutions", "correspondances", _parse_resolutions),
         ("detected_communicating_samples", "communicating_samples", _parse_dcs),
         ("detected_urls", "malware_matches", unicode)
     ]
