@@ -4,6 +4,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext, loader
 import django.utils.html as html
 from django.utils.translation import ugettext
+from django.views.decorators.http import require_safe
 import itertools
 from manage.models import *
 
@@ -13,22 +14,15 @@ from data import *
 
 
 # the decorator prevents access and redirects users who have not logged in
-@login_required(redirect_field_name='/login')
+@login_required
+@require_safe
 def query(request):
-    '''Takes user's query and processes it'''    
-    if request.method == 'POST':
-        return query_execute(request)
-    form = QueryForm()
-    return render_to_response("query.html", {'form': form, 'state': ""}, RequestContext(request))
-
-def query_execute(request):
-    # Retrieve and validate the query form
-    form = QueryForm(request.POST)
-    ctx = RequestContext(request, {"form": form, "state": ""})
-    if not form.is_valid():
-        ctx["state"] = "Unrecognized query input"
+    # Early-abort if there wasn't a query
+    query = request.GET.get("q")
+    ctx = RequestContext(request, {"state": "No results", "query": query})
+    if query == None:
         return render_to_response("query.html", context_instance=ctx)
-    query = form.cleaned_data["query"].strip()
+    query = query.strip()
     
     # Load the user's API keys
     try:
@@ -77,7 +71,7 @@ def execute_query(ctx, query, providers):
                 entry = data.next()
             except StopIteration:
                 if count == 0:
-                    ctx["state"] = "No information returned"
+                    ctx["state"] = "No results"
                     yield tqempty.render(ctx)
                 break
             except Exception as e:
@@ -93,7 +87,7 @@ def execute_query(ctx, query, providers):
     return StreamingHttpResponse(generator())
 
 # the decorator prevents access and redirects users who have not logged in
-@login_required(redirect_field_name='/login')
+@login_required
 def get_keys(request):
     '''Processes and displays keys API keys entered by user'''
     state = 'Please enter your API keys'

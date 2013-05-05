@@ -13,30 +13,25 @@ header {
     border-bottom: #333 solid 1px;
     box-shadow: 0 2px 6px #282828;
 }
-#logo {
+header #logo {
     text-decoration: none;
     font-size: 22px;
     text-transform: uppercase;
     color: #33ccff;
 }
-#logout {
+header #navgroup a {
     color: #0077bb;
     text-decoration: none;
-    margin: 0 9px;
     font-size: 12px;
-
-    position: relative;
-    bottom: 3px;
 }
 header form {
     position: absolute;
     right: 26px;
 }
-
 main {
+    color: #aaccff;
     padding: 50px 10px 10px;
     background-color: #1c1c1c;
-    color: #aaccff;
 }
 div.result {
     background-color: #222;

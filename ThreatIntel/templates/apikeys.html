@@ -1,17 +1,22 @@
-
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>API Keys</title>
-<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<link rel="stylesheet" href="{{STATIC_URL}}forms.css" />
+	<title>TILAPIA | Account</title>
+	<link rel="stylesheet" href="{{STATIC_URL}}normalize.css">
+	<link rel="stylesheet" href="{{STATIC_URL}}query.css">
 </head>
-
 <body>
-	<a href="/logout" text-align:right>Logout</a>
-	<div class="header">ThreatIntel</div>
-
+	<header>
+		<form action="/query" method="get">
+			<input type="text" name="q" value="{{ query }}"></input>
+			<input type="submit" value="Query"></input>
+		</form>
+		<a id="logo" href="/">TILAPIA</a>
+		<span id="navgroup">
+			<a class="navlink" href="/manage">[account]</a>
+			<a class="navlink" href="/logout">[log out]</a>
+		</span>
+	</header>
 	<div class="state"><h2>{{ state }}</h2></div>
 	<form action="/manage" method="post">
 	<div class="box">

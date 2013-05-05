@@ -1,20 +1,25 @@
-{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Query</title>
+{% if query != None %}
+	<title>TILAPIA | Query -&gt; "{{ query }}"</title>
+{% else %}
+	<title>TILAPIA | Query</title>
+{% endif %}
 	<link rel="stylesheet" href="{{STATIC_URL}}normalize.css">
 	<link rel="stylesheet" href="{{STATIC_URL}}query.css">
 </head>
 <body>
 	<header>
-		<form action="/query" method="post">
-			{% csrf_token %}
-			<input type="text" name="query"></input>
+		<form action="/query" method="get">
+			<input type="text" name="q"></input>
 			<input type="submit" value="Query"></input>
 		</form>
-		<a id="logo" href="/">ThreatIntel</a>
-		<a id="logout" href="/logout">(logout)</a>
+		<a id="logo" href="/">TILAPIA</a>
+		<span id="navgroup">
+			<a class="navlink" href="/manage">[account]</a>
+			<a class="navlink" href="/logout">[log out]</a>
+		</span>
 	</header>
 	<main>
 		<span class="none">{{ state }}</span>
