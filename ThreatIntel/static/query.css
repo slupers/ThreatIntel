@@ -62,6 +62,7 @@ main {
 
 td, th {
     vertical-align: top;
+    white-space: nowrap;
 }
 th {
     text-align: left;

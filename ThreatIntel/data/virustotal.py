@@ -94,18 +94,15 @@ class VirusTotalDataProvider(DataProvider):
     
     def _parse_dcs(dcs):
         # Construct an EntityList from the detected communicating samples
-        hdrs = ("occurrence_ts", "n_scans_positive", "n_scans", "sample_sha256")
+        hdrs = ("occurrence_ts", "hit_ratio", "sample_sha256")
         info = EntityList(hdrs)
         for entry in dcs:
-            occurrence_ts = entry.get("date")
-            n_scans_positive = entry.get("positives")
-            n_scans = entry.get("total")
-            sample_sha256 = entry.get("sha256")
-            if occurrence_ts != None:
-                occurrence_ts = datetime.strptime(occurrence_ts, "%Y-%m-%d %H:%M:%S")
-            if sample_sha256 != None:
-                sample_sha256 = binascii.unhexlify(sample_sha256)
-            info.append((occurrence_ts, n_scans_positive, n_scans, sample_sha256))
+            occurrence_ts = datetime.strptime(entry["date"], "%Y-%m-%d %H:%M:%S")
+            p = entry["positives"]
+            t = entry["total"]
+            hit_ratio = "{0}/{1}".format(present(p), present(t))
+            sample_sha256 = binascii.unhexlify(entry["sha256"])
+            info.append((occurrence_ts, hit_ratio, sample_sha256))
         return info
     
     def _parse_resolutions(res):
@@ -150,16 +147,15 @@ class VirusTotalDataProvider(DataProvider):
         # Construct an EntityList from the detected URLs
         if len(urls) == 0:
             return None
-        hdrs = ("occurrence_ts", "n_scans_positive", "n_scans", "url")
+        hdrs = ("occurrence_ts", "hit_ratio", "url")
         info = EntityList(hdrs)
         for entry in urls:
-            occurrence_ts = entry.get("scan_date")
-            n_scans_positive = entry.get("positives")
-            n_scans = entry.get("total")
-            url = entry.get("url")
-            if occurrence_ts != None:
-                occurrence_ts = datetime.strptime(occurrence_ts, "%Y-%m-%d %H:%M:%S")
-            info.append((occurrence_ts, n_scans_positive, n_scans, url))
+            occurrence_ts = datetime.strptime(entry["scan_date"], "%Y-%m-%d %H:%M:%S")
+            p = entry["positives"]
+            t = entry["total"]
+            hit_ratio = "{0}/{1}".format(present(p), present(t))
+            url = entry["url"]
+            info.append((occurrence_ts, hit_ratio, url))
         return info
     
     def _query(self, target, qtype):
@@ -182,7 +178,7 @@ class VirusTotalDataProvider(DataProvider):
         ("positives", "n_scans_positive", lambda x: x),
         ("total", "n_scans", lambda x: x),
         ("scans", "scan_details", _parse_scans),
-        ("permalink", "url", lambda x: x),
+        ("permalink", "report_url", lambda x: x),
         ("resolutions", "correspondances", _parse_resolutions),
         ("detected_communicating_samples", "communicating_samples", _parse_dcs),
         ("detected_urls", "detections", _parse_urls)

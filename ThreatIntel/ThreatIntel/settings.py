@@ -27,12 +27,12 @@ LOGGING_CONFIG = None
 # Backends
 #
 
-TEMPLATE_LOADERS = (
+TEMPLATE_LOADERS = [
     "django.template.loaders.filesystem.Loader",
     "django.template.loaders.app_directories.Loader",
 #     "django.template.loaders.eggs.Loader",
-)
-MIDDLEWARE_CLASSES = (
+]
+MIDDLEWARE_CLASSES = [
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -42,11 +42,11 @@ MIDDLEWARE_CLASSES = (
     #"django.middleware.csrf.CsrfResponseMiddleware",
     # Uncomment the next line for simple clickjacking protection:
     # "django.middleware.clickjacking.XFrameOptionsMiddleware",
-)
-TEMPLATE_DIRS = (
+]
+TEMPLATE_DIRS = [
     os.path.join(SITE_BASE, "../templates")
-)
-INSTALLED_APPS = (
+]
+INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -58,7 +58,7 @@ INSTALLED_APPS = (
     # "django.contrib.admin",
     # Uncomment the next line to enable admin documentation:
     # "django.contrib.admindocs",
-)
+]
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -85,14 +85,14 @@ STATICFILES_FINDERS = [
 # Authentication
 #
 
-AUTHENTICATION_BACKENDS = (
-    "django.contrib.auth.backends.ModelBackend",
-)
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend"
+]
 LOGIN_URL = "/login/"
 
 #
 # Locale
 #
-LOCALE_PATHS = (
+LOCALE_PATHS = [
         os.path.join(SITE_BASE, "../locale")
-)
+]

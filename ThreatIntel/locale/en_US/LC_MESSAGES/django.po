@@ -14,5 +14,119 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "country"
+msgstr "Country"
+
+msgid "as_number"
+msgstr "ASN"
+
+msgid "as_name"
+msgstr "AS name"
+
+msgid "network_prefix"
+msgstr "Network prefix"
+
+msgid "peer_as_list"
+msgstr "AS peers"
+
+msgid "domain"
+msgstr "Domain name"
+
+msgid "isp"
+msgstr "Internet service provider"
+
 msgid "first_event_ts"
-msgstr "First Event Time"
+msgstr "First event time"
+
+msgid "last_event_ts"
+msgstr "Last event time"
+
+msgid "update_ts"
+msgstr "Last updated"
+
+msgid "occurrence_ts"
+msgstr "Event time"
+
+msgid "n_attack_packets"
+msgstr "Attack packet count"
+
+msgid "n_attack_targets"
+msgstr "Attack target count"
+
+msgid "abuse_contact"
+msgstr "Abuse contact"
+
+msgid "communicating_samples"
+msgstr "Communicating samples"
+
+msgid "n_scans"
+msgstr "Scan count"
+
+msgid "n_scans_positive"
+msgstr "Positive scan count"
+
+msgid "sample_md5"
+msgstr "MD5 digest"
+
+msgid "sample_sha1"
+msgstr "SHA1 digest"
+
+msgid "sample_sha256"
+msgstr "SHA256 digest"
+
+msgid "sample_ssdeep"
+msgstr "ssdeep digest"
+
+msgid "av_engine"
+msgstr "Engine"
+
+msgid "av_record_locator"
+msgstr "Record locator"
+
+msgid "av_record_locators"
+msgstr "Record locators"
+
+msgid "file_type"
+msgstr "File type"
+
+msgid "report_id"
+msgstr "Report ID"
+
+msgid "report_url"
+msgstr "Report URL"
+
+msgid "av_definition_ver"
+msgstr "Definition"
+
+msgid "av_engine_ver"
+msgstr "Version"
+
+msgid "scan_positive"
+msgstr "Hit"
+
+msgid "scan_details"
+msgstr "Scan information"
+
+msgid "scan_result"
+msgstr "Outcome"
+
+msgid "correspondances"
+msgstr "Correspondances"
+
+msgid "hit_ratio"
+msgstr "Hit ratio"
+
+msgid "correspondance"
+msgstr "Correspondance"
+
+msgid "file_name"
+msgstr "Filename"
+
+msgid "package_name"
+msgstr "Software package"
+
+msgid "package_vendor"
+msgstr "Software vendor"
+
+msgid "comment"
+msgstr "Comment"
