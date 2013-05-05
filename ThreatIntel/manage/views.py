@@ -15,6 +15,7 @@ def query(request):
     '''Takes user's query and processes it'''
     state = ''
     api_info = []
+    data = []
     if request.method == 'POST':
         # put user-entered information in form
         form = QueryForm(request.POST)
