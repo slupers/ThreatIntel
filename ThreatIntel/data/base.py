@@ -10,7 +10,7 @@ import socket
 from socket import AF_INET, AF_INET6
 import string
 import urllib
-from manage.presentation import *
+from frontend.presentation import *
 
 QUERY_IPV4 = 1
 QUERY_IPV6 = 2

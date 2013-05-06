@@ -11,7 +11,8 @@ import re
 import requests
 import socket
 from socket import AF_INET, IPPROTO_TCP, SOCK_STREAM
-from .base import *
+from data.base import *
+from frontend.presentation import *
 
 class ShadowServerDataProvider(DataProvider):    
     @classmethod

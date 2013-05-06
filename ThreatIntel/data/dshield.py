@@ -5,8 +5,8 @@ from datetime import datetime
 import isodate
 import requests
 from xml.etree.cElementTree import XMLParser
-from .base import *
-from manage.presentation import *
+from data.base import *
+from frontend.presentation import *
 
 class DShieldDataProvider(DataProvider):
     def _handle_date(value):

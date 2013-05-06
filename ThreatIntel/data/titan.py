@@ -9,8 +9,8 @@ import numbers
 import os
 import requests
 import pprint
-from .base import *
-from manage.presentation import *
+from data.base import *
+from frontend.presentation import *
 
 class TitanClient(object):
     SORT_ASCENDING = 1
