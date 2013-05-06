@@ -38,13 +38,13 @@ class PhishTankDataProvider(DataProvider):
                 return None
             info = AttributeList()
             disp = DISP_NEGATIVE
-            if jres["verified"] == "n":
-                disp = DISP_INDETERMINATE
-            else:
+            if jres["verified"] == True:
                 dval = isodate.parse_datetime(jres["verified_at"])
                 info.append(("update_ts", dval))
-                if jres["valid"] == "y":
+                if jres["valid"] == True:
                     disp = DISP_POSITIVE
+            else:
+                disp = DISP_INDETERMINATE
             info.append(("report_id", int(jres["phish_id"])))
             info.append(("report_url", jres["phish_detail_page"]))
         except Exception:

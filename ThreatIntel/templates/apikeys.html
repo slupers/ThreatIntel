@@ -8,8 +8,8 @@
 <body>
 	<header>
 		<form action="/query" method="get">
-			<input type="text" name="q" value="{{ query }}"></input>
-			<input type="submit" value="Query"></input>
+			<input type="text" name="q" value="{{ query }}">
+			<input type="submit" value="Query">
 		</form>
 		<a id="logo" href="/">TILAPIA</a>
 		<span id="navgroup">
@@ -17,16 +17,19 @@
 			<a class="navlink" href="/logout">[log out]</a>
 		</span>
 	</header>
-	<div class="state"><h2>{{ state }}</h2></div>
-	<form action="/manage" method="post">
-	<div class="box">
-		{% csrf_token %}
-		{{ form.as_p }}
-		<div class="button">
-			<input type="submit" value="Submit keys" />
-		</div>
-		<p>Got API keys set up?<a href="/query">Continue to Query page</a></p>
-	</div>
-	</form>
+	<main>
+		<h1>Account settings</h1>
+		<form action="/manage" method="post">
+			<div id="fields">
+				{% csrf_token %}
+				<table>
+					{{ form.as_table }}
+				</table>
+			</div>
+			<div id="submit">
+				<input type="submit" value="Update">
+			</div>
+		</form>
+	</main>
 </body>
 </html>
