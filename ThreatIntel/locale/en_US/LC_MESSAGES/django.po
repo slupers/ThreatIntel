@@ -163,3 +163,15 @@ msgstr "Invalid account settings"
 
 msgid "msg_no_results"
 msgstr "No results"
+
+msgid "titancert"
+msgstr "Titan certificate"
+
+msgid "titankey"
+msgstr "Titan RSA key"
+
+msgid "vtotkey"
+msgstr "VirusTotal key"
+
+msgid "ptankkey"
+msgstr "PhishTank key"

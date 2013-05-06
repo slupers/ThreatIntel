@@ -1,14 +1,15 @@
 import django.forms as forms
 import django.db.models as models
 from django.contrib.auth.models import User
+from django.utils.translation import ugettext as _
 from backend import *
 
 class UserConfiguration(models.Model):
     user = models.OneToOneField(User, related_name="config", primary_key=True)
-    titancert = models.TextField("Titan certificate", blank=True)
-    titankey = models.TextField("Titan RSA key", blank=True)
-    vtotkey = models.CharField("VirusTotal key", max_length=64, blank=True)
-    ptankkey = models.CharField("PhishTank key", max_length=64, blank=True)
+    titancert = models.TextField(_("titancert"), blank=True)
+    titankey = models.TextField(_("titankey"), blank=True)
+    vtotkey = models.CharField(_("vtotkey"), max_length=64, blank=True)
+    ptankkey = models.CharField(_("ptankkey"), max_length=64, blank=True)
     
     def clean(self):
         super(UserConfiguration, self).clean()
