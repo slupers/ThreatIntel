@@ -1,6 +1,10 @@
 html {
     background-color: #161712;
     font: 9pt monospace;
+    color: #aaccff;
+}
+a {
+    color: #aaccff;
 }
 header {
     width: 100%;
@@ -19,7 +23,7 @@ header #logo {
     text-transform: uppercase;
     color: #33ccff;
 }
-header #navgroup a {
+header #userinfo a {
     color: #0077bb;
     text-decoration: none;
     font-size: 12px;
@@ -29,7 +33,6 @@ header form {
     right: 26px;
 }
 main {
-    color: #aaccff;
     padding: 50px 10px 10px;
     background-color: #1c1c1c;
 }
@@ -45,14 +48,12 @@ td, th {
     margin: 0;
 }
 th {
-    min-width: 150px;
-    max-width: 150px;
-    text-overflow: ellipsis;
     text-align: left;
     font-weight: bold;
 }
 form table th {
     padding: 3px 0 0 0;
+    min-width: 200px;
 }
 form div.fields table input, form div.fields table textarea {
     width: 250px;
@@ -77,6 +78,11 @@ div.result h2 {
     background-color: #333;
     margin: 0 0 5px -8px;
     padding: 3px 0 3px 8px;
+}
+div.result th {
+    min-width: 150px;
+    max-width: 150px;
+    text-overflow: ellipsis;
 }
 div.result table>thead>tr>th {
     min-width: 0;

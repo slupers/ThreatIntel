@@ -84,10 +84,11 @@ def register(request):
         nxt = request.POST.get("next")
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
             uname = form.clean_username()
-            pwd = form.clean_password()
-            auth.login(request, auth.authenticate(uname, pwd))
+            pwd = form.clean_password2()
+            form.save()
+            user = auth.authenticate(username=uname, password=pwd)
+            auth.login(request, user)
             return redirect(nxt if nxt != None else "/query")
     else:
         nxt = request.GET.get("next")

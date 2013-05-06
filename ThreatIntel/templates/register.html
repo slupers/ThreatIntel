@@ -7,19 +7,19 @@
 </head>
 <body>
 	<header>
-		<form action="/query" method="get">
+		<form action="{% url 'query' %}" method="get">
 			<input type="text" name="q">
 			<input type="submit" value="Query">
 		</form>
-		<a id="logo" href="/">TILAPIA</a>
+		<a id="logo" href="{% url 'query' %}">TILAPIA</a>
 		<span id="navgroup">
-			<a class="navlink" href="/manage">[account]</a>
-			<a class="navlink" href="/logout">[log out]</a>
+			<a class="navlink" href="{% url 'settings' %}">[account]</a>
+			<a class="navlink" href="{% url 'logout' %}">[log out]</a>
 		</span>
 	</header>
 	<main>
 		<h1>Register</h1>
-		<form action="/register" method="post">
+		<form action="{% url 'register' %}" method="post">
 			<div class="fields">
 				<table>
 					{{ form.as_table }}

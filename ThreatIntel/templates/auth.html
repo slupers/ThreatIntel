@@ -7,19 +7,22 @@
 </head>
 <body>
 	<header>
-		<form action="/query" method="get">
+		<form action="{% url 'query' %}" method="get">
 			<input type="text" name="q">
 			<input type="submit" value="Query">
 		</form>
-		<a id="logo" href="/">TILAPIA</a>
-		<span id="navgroup">
-			<a class="navlink" href="/manage">[account]</a>
-			<a class="navlink" href="/logout">[log out]</a>
+		<a id="logo" href="{% url 'query' %}">TILAPIA</a>
+{% if user.is_authenticated %}
+		<span id="userinfo">
+			{{ user.username }}
+			<a class="navlink" href="{% url 'settings' %}">[settings]</a>
+			<a class="navlink" href="{% url 'logout' %}">[log out]</a>
 		</span>
+{% endif %}
 	</header>
 	<main>
 		<h1>Log in</h1>
-		<form action="{% url 'django.contrib.auth.views.login' %}" method="post">
+		<form action="{% url 'login' %}" method="post">
 			<div class="fields">
 				<table>
 					{{ form.as_table }}
@@ -31,8 +34,12 @@
 			</div>
 			<div class="submit">
 				<input type="submit" value="Log in" />
+{% if next != None %}
+				<a href="{% url 'register' %}?next={{ next|iriencode }}">Register</a>
+{% else %}
+				<a href="{% url 'register' %}">Register</a>
+{% endif %}
 			</div>
-			<p>Don't have an account? <a href="/register">Register Now</a></p>
 		</form>
 	</main>
 </body>
