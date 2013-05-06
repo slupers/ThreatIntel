@@ -1,0 +1,11 @@
+--2013-05-05 23:32:38--  http://www.gnu.org/licenses/gpl-3.0.txt
+Resolving www.gnu.org (www.gnu.org)... 208.118.235.148, 2001:4830:134:3::a
+Connecting to www.gnu.org (www.gnu.org)|208.118.235.148|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 35147 (34K) [text/plain]
+Saving to: `gpl-3.0.txt'
+
+     0K .......... .......... .......... ....                 100%  275K=0.1s
+
+2013-05-05 23:32:38 (275 KB/s) - `gpl-3.0.txt' saved [35147/35147]
+
