@@ -103,4 +103,6 @@ STATICFILES_FINDERS = [
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend"
 ]
-LOGIN_URL = "/login/"
+LOGIN_URL = "/login"
+LOGIN_REDIRECT_URL = "/query"
+LOGOUT_URL = "/logout"

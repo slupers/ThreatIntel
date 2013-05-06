@@ -157,3 +157,9 @@ msgstr "Antivirus scan"
 
 msgid "error"
 msgstr "Error message"
+
+msgid "msg_invalid_acct"
+msgstr "Invalid account settings"
+
+msgid "msg_no_results"
+msgstr "No results"

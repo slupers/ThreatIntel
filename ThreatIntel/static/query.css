@@ -54,7 +54,10 @@ th {
 form table th {
     padding: 3px 0 0 0;
 }
-form div#fields table input, form div#fields table textarea {
+form div.fields table input, form div.fields table textarea {
+    width: 250px;
+}
+form div.fields table.apikeys input, form div.fields table.apikeys textarea {
     width: 500px;
 }
 div.result {

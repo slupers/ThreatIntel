@@ -1,34 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Log in</title>
-	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-	<link rel="stylesheet" href="{{STATIC_URL}}forms.css" />
+	<title>TILAPIA | Log in</title>
+	<link rel="stylesheet" href="{{STATIC_URL}}normalize.css">
+	<link rel="stylesheet" href="{{STATIC_URL}}query.css">
 </head>
 <body>
-	<div class="header">TILAPIA</div>
-	<div class="state">{{ state }}</div>
-	<form action="/login/" method="post">
-	<div class="box">
-		{% csrf_token %}
-		{% if next %}
-		<input type="hidden" name="next" value="{{ next }}" />
-		{% endif %}
-		<label>
-			<span>Username:</span>
-			<input type="text" name="username" value="{{ username}}" /><br />
-		</label>
-
-		<label>
-			<span>Password:</span>
-			<input type="password" name="password" value="" /><br />
-		</label>
-
-		<div class="button">
-			<input type="submit" value="Log In" />
-		</div>
-		<p>Don't have an account?<a href="/register"> Register Now</a></p>
-	</div>
-	</form>
+	<header>
+		<form action="/query" method="get">
+			<input type="text" name="q">
+			<input type="submit" value="Query">
+		</form>
+		<a id="logo" href="/">TILAPIA</a>
+		<span id="navgroup">
+			<a class="navlink" href="/manage">[account]</a>
+			<a class="navlink" href="/logout">[log out]</a>
+		</span>
+	</header>
+	<main>
+		<h1>Log in</h1>
+		<form action="{% url 'django.contrib.auth.views.login' %}" method="post">
+			<div class="fields">
+				<table>
+					{{ form.as_table }}
+				</table>
+				{% csrf_token %}
+{% if next != None %}
+				<input type="hidden" name="next" value="{{ next }}">
+{% endif %}
+			</div>
+			<div class="submit">
+				<input type="submit" value="Log in" />
+			</div>
+			<p>Don't have an account? <a href="/register">Register Now</a></p>
+		</form>
+	</main>
 </body>
 </html>

@@ -8,7 +8,7 @@
 <body>
 	<header>
 		<form action="/query" method="get">
-			<input type="text" name="q" value="{{ query }}">
+			<input type="text" name="q">
 			<input type="submit" value="Query">
 		</form>
 		<a id="logo" href="/">TILAPIA</a>
@@ -20,13 +20,13 @@
 	<main>
 		<h1>Account settings</h1>
 		<form action="/manage" method="post">
-			<div id="fields">
+			<div class="fields">
 				{% csrf_token %}
-				<table>
+				<table class="apikeys">
 					{{ form.as_table }}
 				</table>
 			</div>
-			<div id="submit">
+			<div class="submit">
 				<input type="submit" value="Update">
 			</div>
 		</form>

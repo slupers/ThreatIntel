@@ -1,12 +1,38 @@
+import django.contrib.auth as auth
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect, HttpResponse, StreamingHttpResponse
+from django.contrib.auth.forms import UserCreationForm
+from django.http import StreamingHttpResponse
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext, loader
 import django.utils.html as html
-from django.utils.translation import ugettext
+from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_safe
 import itertools
 from manage.models import *
+
+@login_required
+def get_keys(request):
+    # Retrieve the existing config, if there is one
+    try:
+        inst = request.user.config
+    except UserConfiguration.DoesNotExist:
+        inst = None
+    
+    # Display the form, update the config, or return an error
+    if request.method == "POST":
+        form = UserConfigurationForm(request.POST, instance=inst)
+        if form.is_valid():
+            form.save()
+            return redirect("/query")
+    else:
+        form = UserConfigurationForm(instance=inst)
+    ctx = RequestContext(request, {"form": form})
+    return render_to_response("apikeys.html", context_instance=ctx)
+
+@login_required
+@require_safe
+def home(request):
+    return redirect("/query")
 
 @login_required
 @require_safe
@@ -15,7 +41,7 @@ def query(request):
     target = request.GET.get("q")
     ctx = RequestContext(request, {"query": target})
     if target == None:
-        ctx["state"] = "No results"
+        ctx["state"] = _("msg_no_results")
         return render_to_response("query.html", context_instance=ctx)
     
     # Initiate the query
@@ -23,21 +49,21 @@ def query(request):
     try:
         data = run_query(target, request.user)
     except ValueError:
-        ctx["state"] = "Invalid account settings"
+        ctx["state"] = _("msg_invalid_acct")
         return render_to_response("query.html", context_instance=ctx)
     
     # Stream the response
     def generator():
         tqheader = loader.get_template("result_header.html")
+        yield tqheader.render(ctx)
         tqentry = loader.get_template("result_entry.html")
         tqfooter = loader.get_template("result_footer.html")
-        yield tqheader.render(ctx)
         ctx.push()
         for count in itertools.count():
             try:
                 entry = data.next()
             except StopIteration:
-                msg = "No results"
+                msg = _("msg_no_results")
                 break
             except Exception as e:
                 msg = e.message
@@ -53,18 +79,23 @@ def query(request):
         yield tqfooter.render(ctx)
     return StreamingHttpResponse(generator())
 
-@login_required
-def get_keys(request):
-    try:
-        inst = request.user.config
-    except UserConfiguration.DoesNotExist:
-        inst = None
+def register(request):
     if request.method == "POST":
-        form = UserConfigurationForm(request.POST, instance=inst)
+        nxt = request.POST.get("next")
+        form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect("/query")
+            uname = form.clean_username()
+            pwd = form.clean_password()
+            auth.login(request, auth.authenticate(uname, pwd))
+            return redirect(nxt if nxt != None else "/query")
     else:
-        form = UserConfigurationForm(instance=inst)
-    ctx = RequestContext(request, {"form": form})
-    return render_to_response("apikeys.html", context_instance=ctx)
+        nxt = request.GET.get("next")
+        form = UserCreationForm()
+    ctx = RequestContext(request, {"form": form, "next": nxt})
+    return render_to_response("register.html", context_instance=ctx)
+
+__all__ = [
+    "get_keys",
+    "query"
+]
