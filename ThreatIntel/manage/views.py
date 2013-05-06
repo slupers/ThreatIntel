@@ -30,7 +30,6 @@ def query(request):
     def generator():
         tqheader = loader.get_template("result_header.html")
         tqentry = loader.get_template("result_entry.html")
-        tqempty = loader.get_template("result_empty.html")
         tqfooter = loader.get_template("result_footer.html")
         yield tqheader.render(ctx)
         ctx.push()
@@ -38,18 +37,18 @@ def query(request):
             try:
                 entry = data.next()
             except StopIteration:
-                if count == 0:
-                    ctx["state"] = "No results"
-                    yield tqempty.render(ctx)
+                msg = "No results"
                 break
             except Exception as e:
-                if count == 0:
-                    ctx["state"] = unicode(e.message)
-                    yield tqempty.render(ctx)
+                msg = e.message
                 break
             ctx["entry"] = entry
             yield tqentry.render(ctx)
-            yield ' ' * 1024
+            yield ' ' * 1024 # Force rendering by filling the buffer
+        if count == 0:
+            tqempty = loader.get_template("result_empty.html")
+            ctx["state"] = msg
+            yield tqempty.render(ctx)
         ctx.pop()
         yield tqfooter.render(ctx)
     return StreamingHttpResponse(generator())
@@ -61,11 +60,11 @@ def get_keys(request):
     except UserConfiguration.DoesNotExist:
         inst = None
     if request.method == "POST":
-        form = KeysForm(request.POST, instance=inst)
+        form = UserConfigurationForm(request.POST, instance=inst)
         if form.is_valid():
             form.save()
             return redirect("/query")
     else:
-        form = KeysForm(instance=inst)
+        form = UserConfigurationForm(instance=inst)
     ctx = RequestContext(request, {"form": form})
     return render_to_response("apikeys.html", context_instance=ctx)

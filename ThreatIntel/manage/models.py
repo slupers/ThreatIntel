@@ -17,7 +17,7 @@ class UserConfiguration(models.Model):
         except Exception as e:
             raise forms.ValidationError(e.message)
 
-class KeysForm(forms.ModelForm):
+class UserConfigurationForm(forms.ModelForm):
     class Meta(object):
         model = UserConfiguration
         fields = ("titancert", "titankey", "vtotkey", "ptankkey")
