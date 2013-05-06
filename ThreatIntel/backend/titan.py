@@ -90,8 +90,8 @@ class TitanDataProvider(DataProvider):
             info.append(("scan_positive", False))
         elif status == "infected":
             info.append(("scan_positive", True))
-            info.append(("scan_result", entry["virus"]))
-        else:
+            info.append(("av_record_locator", entry["virus"]))
+        elif status == "error":
             info.append(("error_message", entry["error"]))
         return info
     
@@ -116,33 +116,28 @@ class TitanDataProvider(DataProvider):
     def _parse(cls, sample, analyses):
         # Process sample metadata
         info = AttributeList()
-        for k, v in sample.iteritems():
-            try:
-                if k == "filename":
-                    info.append(("file_name", v))
-                elif k == "hashes":
-                    for k2, v2 in v.iteritems():
-                        if k2 in ("md5", "sha1", "sha256"):
-                            hexstr = binascii.unhexlify(v2["@Hash"])
-                            #info["sample_" + k2] = hexstr
-                            info.append(("sample_" + k2, hexstr))
-                elif k == "ingest_date":
-                    ts = long(v["$date"]) / 1000
-                    dtv = datetime.datetime.utcfromtimestamp(ts)
-                    #info["first_event_ts"] = dtv
-                    info.append(("first_event_ts" , dtv))
-                elif k == "last_ingested":
-                    ts = long(v["$date"]) / 1000
-                    dtv = datetime.datetime.utcfromtimestamp(ts)
-                    #info["last_event_ts"] = dtv
-                    info.append(("last_event_ts" , dtv))
-            except Exception:
-                pass
+        v = sample.get("ingest_date")
+        if v != None:
+            info.append(("first_event_ts", cls._parse_date(v)))
+        v = sample.get("last_ingested")
+        if v != None:
+            info.append(("last_event_ts", cls._parse_date(v)))
+        v = sample.get("hashes")
+        for k in ("md5", "sha1", "sha256"):
+            v2 = v.get(k)
+            if v2 != None:
+                info.append(("sample_" + k, binascii.unhexlify(v2["@Hash"])))
+        v = sample.get("filename")
+        if v != None:
+            info.append(("file_name", v))
         
         # Dump analysis information into its own entry
         adata = EntityList(("analysis", ))
         for analysis in analyses:
             atdata = AttributeList()
+            st = analysis.get("start_time")
+            if st != None:
+                atdata.append(("update_ts", cls._parse_date(st)))
             for atype in analysis["types"]:
                 fn = cls._aformatters.get(atype)
                 if fn != None:
@@ -151,6 +146,10 @@ class TitanDataProvider(DataProvider):
             adata.append((atdata, ))
         info.append(("analyses", adata))
         return InformationSet(DISP_INFORMATIONAL, info)
+    
+    @classmethod
+    def _parse_date(cls, value):
+        return datetime.datetime.utcfromtimestamp(long(value["$date"]) / 1000)
     
     def _query(self, target, qtype):
         if qtype == QUERY_MD5:
