@@ -8,8 +8,8 @@
 <body>
 	<header>
 		<form action="{% url 'query' %}" method="get">
-			<input type="text" name="q">
-			<input type="submit" value="Query">
+			<input type="text" name="q" {{ user.is_authenticated|yesno:",disabled" }}></input>
+			<input type="submit" value="Query" {{ user.is_authenticated|yesno:",disabled" }}></input>
 		</form>
 		<a id="logo" href="{% url 'query' %}">TILAPIA</a>
 {% if user.is_authenticated %}

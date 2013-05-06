@@ -23,7 +23,7 @@ def get_keys(request):
         form = UserConfigurationForm(request.POST, instance=inst)
         if form.is_valid():
             form.save()
-            return redirect("/query")
+            return redirect("query")
     else:
         form = UserConfigurationForm(instance=inst)
     ctx = RequestContext(request, {"form": form})
@@ -32,7 +32,7 @@ def get_keys(request):
 @login_required
 @require_safe
 def home(request):
-    return redirect("/query")
+    return redirect("query")
 
 @login_required
 @require_safe
@@ -81,7 +81,7 @@ def query(request):
 
 def register(request):
     if request.method == "POST":
-        nxt = request.POST.get("next")
+        nexturl = request.POST.get("next")
         form = UserCreationForm(request.POST)
         if form.is_valid():
             uname = form.clean_username()
@@ -89,11 +89,12 @@ def register(request):
             form.save()
             user = auth.authenticate(username=uname, password=pwd)
             auth.login(request, user)
-            return redirect(nxt if nxt != None else "/query")
+            nexturl = "query" if nexturl == None else nexturl
+            return redirect(nexturl)
     else:
-        nxt = request.GET.get("next")
+        nexturl = request.GET.get("next")
         form = UserCreationForm()
-    ctx = RequestContext(request, {"form": form, "next": nxt})
+    ctx = RequestContext(request, {"form": form, "next": nexturl})
     return render_to_response("register.html", context_instance=ctx)
 
 __all__ = [

@@ -11,7 +11,7 @@
 </head>
 <body>
 	<header>
-		<form action="/query" method="get">
+		<form action="{% url 'query' %}" method="get">
 			<input type="text" name="q"></input>
 			<input type="submit" value="Query"></input>
 		</form>

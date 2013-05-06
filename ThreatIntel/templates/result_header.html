@@ -12,12 +12,10 @@
 			<input type="submit" value="Query"></input>
 		</form>
 		<a id="logo" href="{% url 'query' %}">TILAPIA</a>
-{% if user.is_authenticated %}
 		<span id="userinfo">
 			{{ user.username }}
 			<a class="navlink" href="{% url 'settings' %}">[settings]</a>
 			<a class="navlink" href="{% url 'logout' %}">[log out]</a>
 		</span>
-{% endif %}
 	</header>
 	<main>
