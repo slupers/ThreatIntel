@@ -13,8 +13,8 @@ SITE_BASE = os.path.dirname(os.path.realpath(__file__))
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 ALLOWED_HOSTS = [] # FIXME
-WSGI_APPLICATION = "ThreatIntel.wsgi.application"
-ROOT_URLCONF = "ThreatIntel.urls"
+WSGI_APPLICATION = "tilapia.wsgi.application"
+ROOT_URLCONF = "tilapia.urls"
 SECRET_KEY = "z$a6sqedr$ni2zil+7oktg9_4e@!znm_4pufmm9bw=3n#@&amp;fo@" # FIXME
 LOGGING_CONFIG = None
 

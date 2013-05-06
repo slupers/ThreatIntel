@@ -6,5 +6,5 @@ import os
 import sys
 
 if __name__ == b"__main__":
-    os.environ.setdefault(b"DJANGO_SETTINGS_MODULE", b"ThreatIntel.settings")
+    os.environ.setdefault(b"DJANGO_SETTINGS_MODULE", b"tilapia.settings")
     django.core.management.execute_from_command_line(sys.argv)

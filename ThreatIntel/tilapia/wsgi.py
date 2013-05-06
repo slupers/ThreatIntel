@@ -1,5 +1,5 @@
 """
-WSGI config for ThreatIntel project.
+WSGI config for tilapia project.
 
 This module contains the WSGI application used by Django's development server
 and any production WSGI deployments. It should expose a module-level variable
@@ -18,5 +18,5 @@ gevent.monkey.patch_all()
 import django.core.wsgi
 import os
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ThreatIntel.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tilapia.settings")
 application = django.core.wsgi.get_wsgi_application()
