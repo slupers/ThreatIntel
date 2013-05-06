@@ -176,20 +176,20 @@ class TitanDataProvider(DataProvider):
         return self._parse(sample, analyses)
 
     _aformatters = {
-        "pcap": _format_none,
-        "network": _format_none,
+        "pcap": None,
+        "network": None,
         "av": _format_av,
-        "syscall": _format_none,
-        "dropped_files": _format_none,
-        "nids": _format_none,
-        "screenshots": _format_none,
-        "url": _format_none,
-        "executable": _format_none,
-        "android": _format_none,
-        "cdf": _format_none,
-        "flash": _format_none,
-        "jpeg": _format_none,
-        "other": _format_none
+        "syscall": None,
+        "dropped_files": None,
+        "nids": None,
+        "screenshots": None,
+        "url": None,
+        "executable": None,
+        "android": None,
+        "cdf": None,
+        "flash": None,
+        "jpeg": None,
+        "other": None
     }    
 
 __all__ = [
