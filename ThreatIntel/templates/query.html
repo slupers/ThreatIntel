@@ -12,7 +12,11 @@
 <body>
 	<header>
 		<form action="{% url 'query' %}" method="get">
+{% if query != None %}
 			<input type="text" name="q" value="{{ query }}"></input>
+{% else %}
+			<input type="text" name="q"></input>
+{% endif %}
 			<input type="submit" value="Query"></input>
 		</form>
 		<a id="logo" href="{% url 'query' %}">TILAPIA</a>

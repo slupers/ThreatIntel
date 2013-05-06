@@ -27,7 +27,7 @@ def get_keys(request):
     else:
         form = UserConfigurationForm(instance=inst)
     ctx = RequestContext(request, {"form": form})
-    return render_to_response("apikeys.html", context_instance=ctx)
+    return render_to_response("settings.html", context_instance=ctx)
 
 @login_required
 @require_safe
