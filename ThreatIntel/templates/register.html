@@ -24,18 +24,31 @@
 		<h1>Register</h1>
 		<form action="{% url 'register' %}" method="post">
 			<div class="fields">
+				{{ form.non_field_errors }}
 				<table>
-					{{ form.as_table }}
+{% for field in form %}
+					<tr>
+						<th>{{ field.label_tag }}</th>
+						<td>{{ field }}</td>
+{% if field.errors %}
+						<td>{{ field.errors }}</td>
+{% endif %}
+					</tr>
+{% endfor %}
 				</table>
 				{% csrf_token %}
-{% if next != None %}
+{% if next %}
 				<input type="hidden" name="next" value="{{ next }}">
 {% endif %}
 			</div>
 			<div class="submit">
 				<input type="submit" value="Register" />
+{% if next %}
+				<a href="{% url 'login' %}?next={{ next|iriencode }}">Log in</a></p>
+{% else %}
+				<a href="{% url 'login' %}">Log in</a></p>
+{% endif %}
 			</div>
-			<p>Already have an account? <a href="/login">Log in</a></p>
 		</form>
 	</main>
 </body>

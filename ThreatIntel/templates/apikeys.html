@@ -24,10 +24,19 @@
 		<h1>Account settings</h1>
 		<form action="{% url 'settings' %}" method="post">
 			<div class="fields">
-				{% csrf_token %}
+				{{ form.non_field_errors }}
 				<table class="apikeys">
-					{{ form.as_table }}
+{% for field in form %}
+					<tr>
+						<th>{{ field.label_tag }}</th>
+						<td>{{ field }}</td>
+{% if field.errors %}
+						<td>{{ field.errors }}</td>
+{% endif %}
+					</tr>
+{% endfor %}
 				</table>
+				{% csrf_token %}
 			</div>
 			<div class="submit">
 				<input type="submit" value="Update">

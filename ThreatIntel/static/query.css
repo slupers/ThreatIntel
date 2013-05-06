@@ -52,7 +52,7 @@ th {
     font-weight: bold;
 }
 form table th {
-    padding: 3px 0 0 0;
+    padding: 4px 0 0 0;
     min-width: 200px;
 }
 form div.fields table input, form div.fields table textarea {
@@ -60,6 +60,21 @@ form div.fields table input, form div.fields table textarea {
 }
 form div.fields table.apikeys input, form div.fields table.apikeys textarea {
     width: 500px;
+}
+form ul.errorlist {
+    color: #ff0000;
+    list-style-type: none;
+    padding: 4px 0 0 0;
+    margin: 0 0 8px 0;
+}
+form ul.errorlist li {
+    list-style-type: none;
+    display: inline;
+    padding: 0;
+    margin: 0;
+}
+form table ul.errorlist {
+    margin: 0;
 }
 div.result {
     background-color: #222;
