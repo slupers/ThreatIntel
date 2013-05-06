@@ -1,5 +1,3 @@
-# FIXME: SWLC - Put Django's license here
-
 from __future__ import absolute_import, division, print_function, unicode_literals
 import abc
 import collections
@@ -38,13 +36,10 @@ class DataProvider(object):
         ntarget, qtype = DataProvider._sanitize(target)
         try:
             return self._query(ntarget, qtype)
-        except QueryError as e:
-            msg = unicode(e.message)
         except Exception as e:
-            msg = "An internal error occurred"
-        info = AttributeList()
-        info.append(("error", msg))
-        return InformationSet(DISP_FAILURE, info)
+            info = AttributeList()
+            info.append(("error", unicode(e.message)))
+            return InformationSet(DISP_FAILURE, info)
     
     @staticmethod
     def queryn(target, providers):
@@ -54,14 +49,10 @@ class DataProvider(object):
         def query1(p):
             try:
                 return (p, p._query(ntarget, qtype))
-            #except QueryError as e:
             except Exception as e:
-                msg = unicode(e.message)
-            #except Exception as e:
-            #    msg = "An internal error occurred"
-            info = AttributeList()
-            info.append(("error", msg))
-            return (p, InformationSet(DISP_FAILURE, info))
+                info = AttributeList()
+                info.append(("error", unicode(e.message)))
+                return (p, InformationSet(DISP_FAILURE, info))
         g = gevent.pool.Group()
         l = g.imap_unordered(query1, providers)
         for p, iset in l:
@@ -149,6 +140,7 @@ class DataProvider(object):
             raise ValueError() # No host specified
         res[b"authority"] = DataProvider._sanitizefqdn(authority)[:-1]
         iri = rfc3987.compose(**res)
+        # Derived from Django
         uri = urllib.quote(iri.encode("utf-8"), safe=b"/#%[]=:;$&()+,!?*@'~")
         return unicode(uri)
     
@@ -158,6 +150,3 @@ class InformationSet(object):
         assert isinstance(info, AttributeList)
         self.disposition = int(disposition)
         self.info = info
-
-class QueryError(RuntimeError):
-    pass

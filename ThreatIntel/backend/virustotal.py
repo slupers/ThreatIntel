@@ -38,7 +38,7 @@ class VirusTotalClient(object):
             msg = res.get("verbose_msg")
             if msg == None:
                 msg = "(unknown)"
-            raise QueryError(b"Query failed: {0}".format(msg))
+            raise RuntimeError(b"Query failed: {0}".format(msg))
         return res
     
     def query_fqdn(self, domain):

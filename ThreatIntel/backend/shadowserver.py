@@ -26,9 +26,9 @@ class ShadowServerDataProvider(DataProvider):
             if output.startswith("! Whitelisted:"):
                 return cls._parsewhitelist(output)
             elif output.startswith("! Sorry"):
-                raise QueryError(b"Query failed")
+                raise RuntimeError(b"Query failed")
             elif not output.startswith("! No match found"):
-                raise QueryError(b"Invalid response from server")
+                raise RuntimeError(b"Invalid response from server")
             return None
         csvend = output.index("\n")
         csvdata = output[0:csvend]

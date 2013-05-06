@@ -92,7 +92,7 @@ class TitanDataProvider(DataProvider):
             info.append(("scan_positive", True))
             info.append(("av_record_locator", entry["virus"]))
         elif status == "error":
-            info.append(("error_message", entry["error"]))
+            info.append(("error", entry["error"]))
         return info
     
     def _format_jpeg(entry):

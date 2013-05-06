@@ -32,23 +32,20 @@ class PhishTankDataProvider(DataProvider):
         r.raise_for_status()
         
         # Produce an InformationSet
-        try:
-            jres = r.json()["results"]
-            if jres["in_database"] != True:
-                return None
-            info = AttributeList()
-            disp = DISP_NEGATIVE
-            if jres["verified"] == True:
-                dval = isodate.parse_datetime(jres["verified_at"])
-                info.append(("update_ts", dval))
-                if jres["valid"] == True:
-                    disp = DISP_POSITIVE
-            else:
-                disp = DISP_INDETERMINATE
-            info.append(("report_id", int(jres["phish_id"])))
-            info.append(("report_url", jres["phish_detail_page"]))
-        except Exception:
-            raise QueryError(b"Received data in unexpected format")
+        jres = r.json()["results"]
+        if jres["in_database"] != True:
+            return None
+        info = AttributeList()
+        disp = DISP_NEGATIVE
+        if jres["verified"] == True:
+            dval = isodate.parse_datetime(jres["verified_at"])
+            info.append(("update_ts", dval))
+            if jres["valid"] == True:
+                disp = DISP_POSITIVE
+        else:
+            disp = DISP_INDETERMINATE
+        info.append(("report_id", int(jres["phish_id"])))
+        info.append(("report_url", jres["phish_detail_page"]))
         return InformationSet(disp, info)
     
     _endpoint = "http://checkurl.phishtank.com/checkurl/"
