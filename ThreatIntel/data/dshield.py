@@ -5,7 +5,7 @@ from datetime import datetime
 import isodate
 import requests
 from xml.etree.cElementTree import XMLParser
-from data.base import *
+from .base import *
 from frontend.presentation import *
 
 class DShieldDataProvider(DataProvider):

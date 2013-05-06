@@ -7,7 +7,7 @@ from datetime import datetime
 import gevent
 import operator
 import requests
-from data.base import *
+from .base import *
 from frontend.presentation import *
 
 class VirusTotalClient(object):    

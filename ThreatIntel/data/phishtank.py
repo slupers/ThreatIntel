@@ -3,7 +3,7 @@ import gevent.monkey
 gevent.monkey.patch_socket()
 import isodate
 import requests
-from data.base import *
+from .base import *
 from frontend.presentation import *
 
 class PhishTankDataProvider(DataProvider):

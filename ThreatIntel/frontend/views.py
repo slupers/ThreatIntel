@@ -8,7 +8,7 @@ import django.utils.html as html
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_safe
 import itertools
-from manage.models import *
+from .models import *
 
 @login_required
 def get_keys(request):

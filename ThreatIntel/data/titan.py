@@ -9,7 +9,7 @@ import numbers
 import os
 import requests
 import pprint
-from data.base import *
+from .base import *
 from frontend.presentation import *
 
 class TitanClient(object):

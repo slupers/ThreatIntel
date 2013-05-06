@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url
 import django.contrib.auth.views
 import frontend.views
 
-urlpatterns += patterns("",
+urlpatterns = patterns("",
     url(r"^$",
         frontend.views.home,
         name="home"),
@@ -17,10 +17,10 @@ urlpatterns += patterns("",
         django.contrib.auth.views.logout_then_login,
         name="logout"),
     url(r"^account/register$",
-        manage.views.register,
+        frontend.views.register,
         name="register"),
     url(r"^account/settings$",
-        manage.views.get_keys,
+        frontend.views.get_keys,
         name="settings"),
     url(r"^account/settings/password$",
         django.contrib.auth.views.password_change,
