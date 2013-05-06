@@ -1,7 +1,7 @@
 import django.forms as forms
 import django.db.models as models
 from django.contrib.auth.models import User
-from data import *
+from backend import *
 
 class UserConfiguration(models.Model):
     user = models.OneToOneField(User, related_name="config", primary_key=True)
