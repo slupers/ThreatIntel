@@ -25,6 +25,6 @@ urlpatterns = patterns("",
     url(r"^account/settings/password$",
         django.contrib.auth.views.password_change,
         {"template_name": "pwdchange.html",
-         "post_change_redirect": "/account/"},
+         "post_change_redirect": "/account/settings"},
         name="pwdchange")
 )
